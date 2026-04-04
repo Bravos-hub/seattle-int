@@ -1,74 +1,47 @@
-# React + TypeScript + Vite
+# Seattle International Church Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project implements the Phase 1 church website as a static-first React and Vite experience with client-side routing, structured content, live external integrations, and mobile-first layouts.
 
-Currently, two official plugins are available:
+## What is included
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Multi-page routes for home, about, visit, sermons, events, ministries, giving, contact, and prayer requests
+- Structured church content in one source file so page copy and key links are not buried inside components
+- Search across pages, sermons, and events
+- Event detail pages and ministry detail pages
+- Live hosted form submission wiring for visitor, contact, prayer, and ministry-interest flows
+- Route-based page titles and description metadata
 
-## React Compiler
+## Main content file
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Update most launch content in [src/content/siteContent.ts](D:/Dev/SeattleInt/src/content/siteContent.ts).
 
-## Expanding the ESLint configuration
+This file contains:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- church identity, service times, address, contacts, and social links
+- leadership, ministries, sermons, and events
+- giving links and FAQ content
+- hosted form endpoints and success messages
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Integration notes
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Forms currently post to `formsubmit.co` endpoints defined in the content layer. Replace these email-based endpoints with the church's real verified destination before production use.
+- The giving portal uses a placeholder `Tithe.ly` link and should be replaced with the church's live giving account.
+- The YouTube and social URLs are placeholder church handles and should be updated to the real ministry accounts.
+- BrowserRouter is used for clean URLs, so production hosting should include SPA fallback rewrites for deep links like `/events/city-prayer-night`.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Commands
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Suggested content handoff checklist
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# seattle-int
+- Replace the placeholder church name, address, phone numbers, and emails with real approved values.
+- Replace giving, social, and sermon links with live ministry-owned destinations.
+- Confirm every ministry leader name, schedule, and contact path with the church council.
+- Verify hosted form endpoints submit successfully after email verification.
+- Re-test mobile navigation, maps, and all external CTAs before launch.
