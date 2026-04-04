@@ -1,12 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
 
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { formatDateTimeRange } from '../lib/formatters'
 import { NotFoundPage } from './NotFoundPage'
 
 export function EventDetailPage() {
   const { slug } = useParams()
+  const siteContent = useSiteContent()
   const event = siteContent.events.find((item) => item.slug === slug)
 
   useDocumentMeta(

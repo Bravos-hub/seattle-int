@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import './App.css'
 import { Layout } from './components/Layout'
+import { AdminPage } from './pages/AdminPage'
 import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
 import { EventDetailPage } from './pages/EventDetailPage'
@@ -18,6 +19,7 @@ import { VisitPage } from './pages/VisitPage'
 function App() {
   return (
     <Routes>
+      <Route element={<AdminPage />} path="/admin" />
       <Route element={<Layout />} path="/">
         <Route index element={<HomePage />} />
         <Route element={<AboutPage />} path="about" />

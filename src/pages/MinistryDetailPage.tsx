@@ -1,12 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
 
 import { ExternalForm, type FormField } from '../components/ExternalForm'
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { NotFoundPage } from './NotFoundPage'
 
 export function MinistryDetailPage() {
   const { slug } = useParams()
+  const siteContent = useSiteContent()
   const ministry = siteContent.ministries.find((item) => item.slug === slug)
 
   useDocumentMeta(

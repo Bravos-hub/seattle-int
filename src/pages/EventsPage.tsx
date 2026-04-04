@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { formatDateTimeRange, normalizeSearchValue } from '../lib/formatters'
 import type { EventCategory } from '../types'
@@ -17,6 +17,7 @@ const eventCategories: EventCategory[] = [
 ]
 
 export function EventsPage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Events',
     'Browse upcoming church events by category, view event details, and find the right next step for registration or contact.',
@@ -39,7 +40,7 @@ export function EventsPage() {
 
       return matchesCategory && matchesQuery
     })
-  }, [category, deferredQuery])
+  }, [category, deferredQuery, siteContent.events])
 
   const spotlightEvent = filteredEvents[0] ?? siteContent.events[0]
 

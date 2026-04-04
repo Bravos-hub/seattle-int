@@ -1,5 +1,5 @@
 import { ExternalForm, type FormField } from '../components/ExternalForm'
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
 const visitorFields: FormField[] = [
@@ -27,6 +27,7 @@ const visitorFields: FormField[] = [
 ]
 
 export function VisitPage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Plan Your Visit',
     'Get service times, directions, parking details, kids information, what to expect, and a simple visitor form before attending.',

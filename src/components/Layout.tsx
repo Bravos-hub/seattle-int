@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { searchIndex, siteContent } from '../content/siteContent'
+import { useSearchIndex, useSiteContent } from '../content/siteContentStore'
 import { normalizeSearchValue } from '../lib/formatters'
-
-const navItems = siteContent.pageSummaries.filter((page) => page.title !== 'Home')
 
 export function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const siteContent = useSiteContent()
+  const searchIndex = useSearchIndex()
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const navItems = siteContent.pageSummaries.filter((page) => page.title !== 'Home')
 
   useEffect(() => {
     if (location.hash) {
@@ -41,7 +42,7 @@ export function Layout() {
           .includes(normalizedQuery),
       )
       .slice(0, 6)
-  }, [query])
+  }, [query, searchIndex])
 
   function closeNavigation() {
     setMenuOpen(false)
@@ -235,6 +236,9 @@ export function Layout() {
             >
               Get Directions
             </a>
+            <Link className="footer-admin-link" to="/admin">
+              Admin CMS
+            </Link>
           </div>
         </div>
       </footer>
