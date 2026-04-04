@@ -13,5 +13,5 @@
 }
 
 body {
-  @apply bg-stone-50 text-stone-800 antialiased selection:bg-primary-500/20 selection:text-stone-900;
+  @apply bg-stone-50 text-stone-800 antialiased selection:bg-primary-500/20 selection:text-stone-900 overflow-x-hidden;
 }
