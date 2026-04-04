@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { motion, type Variants } from 'framer-motion'
-import { useState, useEffect } from 'react'
 
 import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
