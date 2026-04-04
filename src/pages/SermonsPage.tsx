@@ -1,10 +1,11 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { formatDate, normalizeSearchValue } from '../lib/formatters'
 
 export function SermonsPage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Sermons',
     'Watch recent sermons, browse by speaker or series, and search teaching by topic, title, or Scripture reference.',
@@ -16,7 +17,7 @@ export function SermonsPage() {
 
   const speakers = useMemo(
     () => ['All speakers', ...new Set(siteContent.sermons.map((sermon) => sermon.speaker))],
-    [],
+    [siteContent.sermons],
   )
 
   const filteredSermons = useMemo(() => {
@@ -32,7 +33,7 @@ export function SermonsPage() {
 
       return matchesSpeaker && matchesQuery
     })
-  }, [deferredQuery, speaker])
+  }, [deferredQuery, siteContent.sermons, speaker])
 
   const featuredSermon = filteredSermons[0] ?? siteContent.sermons[0]
 

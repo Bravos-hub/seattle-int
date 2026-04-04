@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 
 function upsertMeta(selector: string, attrs: Record<string, string>) {
   let element = document.head.querySelector<HTMLMetaElement>(selector)
@@ -16,6 +16,8 @@ function upsertMeta(selector: string, attrs: Record<string, string>) {
 }
 
 export function useDocumentMeta(title: string, description: string) {
+  const siteContent = useSiteContent()
+
   useEffect(() => {
     const fullTitle = `${title} | ${siteContent.site.name}`
     document.title = fullTitle
@@ -34,5 +36,5 @@ export function useDocumentMeta(title: string, description: string) {
       property: 'og:description',
       content: description,
     })
-  }, [description, title])
+  }, [description, siteContent.site.name, title])
 }

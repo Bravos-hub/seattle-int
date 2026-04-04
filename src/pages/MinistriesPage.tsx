@@ -1,32 +1,34 @@
 import { Link } from 'react-router-dom'
 
 import { ExternalForm, type FormField } from '../components/ExternalForm'
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
-const ministryJoinFields: FormField[] = [
-  { name: 'name', label: 'Full name', type: 'text', required: true },
-  { name: 'email', label: 'Email address', type: 'email', required: true },
-  { name: 'phone', label: 'Phone number', type: 'tel' },
-  {
-    name: 'ministry_interest',
-    label: 'Ministry area',
-    type: 'select',
-    required: true,
-    options: siteContent.ministries.map((ministry) => ({
-      label: ministry.name,
-      value: ministry.name,
-    })),
-  },
-  {
-    name: 'serving_story',
-    label: 'Tell us how you would like to serve',
-    type: 'textarea',
-    placeholder: 'Share your skills, background, or the kind of team you are interested in joining.',
-  },
-]
-
 export function MinistriesPage() {
+  const siteContent = useSiteContent()
+  const ministryJoinFields: FormField[] = [
+    { name: 'name', label: 'Full name', type: 'text', required: true },
+    { name: 'email', label: 'Email address', type: 'email', required: true },
+    { name: 'phone', label: 'Phone number', type: 'tel' },
+    {
+      name: 'ministry_interest',
+      label: 'Ministry area',
+      type: 'select',
+      required: true,
+      options: siteContent.ministries.map((ministry) => ({
+        label: ministry.name,
+        value: ministry.name,
+      })),
+    },
+    {
+      name: 'serving_story',
+      label: 'Tell us how you would like to serve',
+      type: 'textarea',
+      placeholder:
+        'Share your skills, background, or the kind of team you are interested in joining.',
+    },
+  ]
+
   useDocumentMeta(
     'Ministries',
     'Explore church ministries, learn who each space serves, and submit interest in joining or serving.',

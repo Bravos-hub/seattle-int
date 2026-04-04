@@ -1,5 +1,5 @@
 import { ExternalForm, type FormField } from '../components/ExternalForm'
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
 const contactFields: FormField[] = [
@@ -28,6 +28,7 @@ const contactFields: FormField[] = [
 ]
 
 export function ContactPage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Contact',
     'Reach the church office, get map directions, browse social links, and send a general inquiry or care request.',

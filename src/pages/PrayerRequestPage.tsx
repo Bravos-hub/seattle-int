@@ -1,5 +1,5 @@
 import { ExternalForm, type FormField } from '../components/ExternalForm'
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
 const prayerFields: FormField[] = [
@@ -38,6 +38,7 @@ const prayerFields: FormField[] = [
 ]
 
 export function PrayerRequestPage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Prayer Request',
     'Submit a prayer request with optional privacy and follow-up preferences so the church can pray with care.',

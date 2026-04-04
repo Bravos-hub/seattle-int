@@ -1,6 +1,6 @@
 import type { SearchEntry, SiteContent } from '../types'
 
-export const siteContent: SiteContent = {
+export const defaultSiteContent: SiteContent = {
   site: {
     name: 'Seattle International Church',
     shortName: 'Seattle International',
@@ -544,26 +544,28 @@ export const siteContent: SiteContent = {
   },
 }
 
-export const searchIndex: SearchEntry[] = [
-  ...siteContent.pageSummaries.map((page) => ({
+export function buildSearchIndex(siteContent: SiteContent): SearchEntry[] {
+  return [
+    ...siteContent.pageSummaries.map((page) => ({
     id: `page-${page.path === '/' ? 'home' : page.path.slice(1)}`,
     category: 'Page' as const,
     label: page.title,
     description: page.description,
     path: page.path,
   })),
-  ...siteContent.sermons.map((sermon) => ({
+    ...siteContent.sermons.map((sermon) => ({
     id: `sermon-${sermon.slug}`,
     category: 'Sermon' as const,
     label: sermon.title,
     description: `${sermon.series} • ${sermon.speaker} • ${sermon.scripture}`,
     path: `/sermons#sermon-${sermon.slug}`,
   })),
-  ...siteContent.events.map((event) => ({
+    ...siteContent.events.map((event) => ({
     id: `event-${event.slug}`,
     category: 'Event' as const,
     label: event.title,
     description: `${event.category} • ${event.location}`,
     path: `/events/${event.slug}`,
   })),
-]
+  ]
+}

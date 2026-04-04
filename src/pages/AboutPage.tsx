@@ -1,7 +1,8 @@
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
 export function AboutPage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'About',
     'Meet Seattle International Church through our mission, vision, values, statement of faith, story, and leadership team.',

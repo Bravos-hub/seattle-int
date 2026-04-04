@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { formatShortDate } from '../lib/formatters'
 
 export function HomePage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Welcome Home',
     'Find service times, upcoming events, latest sermons, ministries, prayer support, and next steps for visiting Seattle International Church.',

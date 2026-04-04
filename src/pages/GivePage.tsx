@@ -1,7 +1,8 @@
-import { siteContent } from '../content/siteContent'
+import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 
 export function GivePage() {
+  const siteContent = useSiteContent()
   useDocumentMeta(
     'Give',
     'Understand why the church gives, explore secure giving options, and review common giving questions before donating.',
