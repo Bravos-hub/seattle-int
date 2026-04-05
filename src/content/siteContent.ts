@@ -4,10 +4,10 @@ export const defaultSiteContent: SiteContent = {
   site: {
     name: 'Seattle International Church',
     shortName: 'Seattle International',
-    heroTitle: 'Welcome Home',
+    heroTitle: 'SEATTLE INTERNATIONAL CHURCH',
     tagline: 'A place to worship, grow, and belong.',
     welcomeMessage:
-      'Seattle International Church is a Christ-centered family serving the city with worship, prayer, biblical teaching, and compassionate community.',
+      'A Christ-centered family serving the city with worship, prayer, biblical teaching, and compassionate community.',
     description:
       'A warm, mobile-first church website for first-time visitors, members, and ministry leaders.',
     address: '2410 Rainier Avenue South, Seattle, WA 98144',
@@ -547,25 +547,25 @@ export const defaultSiteContent: SiteContent = {
 export function buildSearchIndex(siteContent: SiteContent): SearchEntry[] {
   return [
     ...siteContent.pageSummaries.map((page) => ({
-    id: `page-${page.path === '/' ? 'home' : page.path.slice(1)}`,
-    category: 'Page' as const,
-    label: page.title,
-    description: page.description,
-    path: page.path,
-  })),
+      id: `page-${page.path === '/' ? 'home' : page.path.slice(1)}`,
+      category: 'Page' as const,
+      label: page.title,
+      description: page.description,
+      path: page.path,
+    })),
     ...siteContent.sermons.map((sermon) => ({
-    id: `sermon-${sermon.slug}`,
-    category: 'Sermon' as const,
-    label: sermon.title,
-    description: `${sermon.series} • ${sermon.speaker} • ${sermon.scripture}`,
-    path: `/sermons#sermon-${sermon.slug}`,
-  })),
+      id: `sermon-${sermon.slug}`,
+      category: 'Sermon' as const,
+      label: sermon.title,
+      description: `${sermon.series} • ${sermon.speaker} • ${sermon.scripture}`,
+      path: `/sermons#sermon-${sermon.slug}`,
+    })),
     ...siteContent.events.map((event) => ({
-    id: `event-${event.slug}`,
-    category: 'Event' as const,
-    label: event.title,
-    description: `${event.category} • ${event.location}`,
-    path: `/events/${event.slug}`,
-  })),
+      id: `event-${event.slug}`,
+      category: 'Event' as const,
+      label: event.title,
+      description: `${event.category} • ${event.location}`,
+      path: `/events/${event.slug}`,
+    })),
   ]
 }

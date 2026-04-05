@@ -1,17 +1,13 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
-import { useSearchIndex, useSiteContent } from '../content/siteContentStore'
-import { normalizeSearchValue } from '../lib/formatters'
+import { useSiteContent } from '../content/siteContentStore'
 
 export function Layout() {
   const location = useLocation()
-  const navigate = useNavigate()
   const siteContent = useSiteContent()
-  const searchIndex = useSearchIndex()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [query, setQuery] = useState('')
   const [isScrolled, setIsScrolled] = useState(false)
   const navItems = siteContent.pageSummaries.filter((page) => page.title !== 'Home' && page.title !== 'Plan Your Visit')
 
@@ -40,42 +36,8 @@ export function Layout() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const results = useMemo(() => {
-    const normalizedQuery = normalizeSearchValue(query)
-
-    if (!normalizedQuery) {
-      return []
-    }
-
-    return searchIndex
-      .filter((entry) =>
-        `${entry.label} ${entry.description}`
-          .toLowerCase()
-          .includes(normalizedQuery),
-      )
-      .slice(0, 6)
-  }, [query, searchIndex])
-
   function closeNavigation() {
     setMenuOpen(false)
-  }
-
-  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (!results[0]) {
-      return
-    }
-
-    navigate(results[0].path)
-    closeNavigation()
-    setQuery('')
-  }
-
-  function handleResultClick(path: string) {
-    navigate(path)
-    closeNavigation()
-    setQuery('')
   }
 
   return (
@@ -132,48 +94,14 @@ export function Layout() {
             </nav>
 
             <div className="flex flex-col xl:flex-row items-center gap-6 w-full xl:w-auto mt-4 xl:mt-0 pt-4 xl:pt-0 border-t border-white/10 xl:border-none">
-              <form className="relative w-full xl:w-48" onSubmit={handleSearchSubmit} role="search">
-                <input
-                  id="site-search"
-                  className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/20 text-sm text-white rounded-md px-4 py-2 outline-none transition-all placeholder:text-white/40"
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search..."
-                  value={query}
-                />
-                
-                <AnimatePresence>
-                  {query && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute top-full right-0 left-0 mt-2 w-full xl:w-80 bg-white rounded-md shadow-2xl border border-stone-100 overflow-hidden p-2 z-50 text-left" 
-                      role="listbox"
-                    >
-                      {results.length ? (
-                        <div className="flex flex-col gap-1">
-                          {results.map((result) => (
-                            <button
-                              className="text-left p-3 hover:bg-stone-50 rounded-sm transition-colors"
-                              key={result.id}
-                              onClick={() => handleResultClick(result.path)}
-                              type="button"
-                            >
-                              <div className="font-semibold text-stone-900 text-sm">{result.label}</div>
-                              <div className="text-xs text-[#f97316] font-medium mb-1">{result.category}</div>
-                              <div className="text-xs text-stone-500 line-clamp-1">{result.description}</div>
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center text-sm text-stone-500">
-                          No match yet.
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </form>
+              <Link
+                className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors w-full xl:w-auto justify-center"
+                onClick={closeNavigation}
+                to="/sermons"
+              >
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                Live Stream
+              </Link>
 
               <div className="flex w-full xl:w-auto">
                 <a
