@@ -12,7 +12,8 @@ export function Layout() {
   const searchIndex = useSearchIndex()
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const navItems = siteContent.pageSummaries.filter((page) => page.title !== 'Home')
+  const [isScrolled, setIsScrolled] = useState(false)
+  const navItems = siteContent.pageSummaries.filter((page) => page.title !== 'Home' && page.title !== 'Plan Your Visit')
 
   const isHome = location.pathname === '/'
 
@@ -30,6 +31,14 @@ export function Layout() {
 
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [location.hash, location.pathname])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const results = useMemo(() => {
     const normalizedQuery = normalizeSearchValue(query)
@@ -76,12 +85,12 @@ export function Layout() {
       </a>
 
       {/* Edge-to-edge Header */}
-      <div className={`absolute top-0 w-full z-50 transition-colors duration-300 ${isHome ? 'bg-transparent' : 'bg-[#0b162c] border-b border-white/5'}`}>
+      <div className={`fixed top-0 w-full z-50 transition-colors duration-300 ${isHome && !isScrolled ? 'bg-transparent' : 'bg-[#0b162c] border-b border-white/5 shadow-2xl'}`}>
         <motion.header 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-[1400px] mx-auto px-6 py-6 md:py-8 flex items-center justify-between"
+          className="max-w-[1400px] mx-auto px-6 py-6 md:py-8 flex items-center justify-between gap-8 md:gap-12"
         >
           <Link className="flex items-center gap-2 shrink-0 group text-white" onClick={closeNavigation} to="/">
             <svg className="w-6 h-6 text-[#f97316] group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
