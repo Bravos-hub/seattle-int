@@ -1,5 +1,6 @@
 import { useMemo, useState, useTransition, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { useCmsController } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
@@ -14,23 +15,14 @@ type AdminTab =
   | 'events'
   | 'giving'
 
-const adminTabs: { id: AdminTab; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'general', label: 'General' },
-  { id: 'about', label: 'About + Leaders' },
-  { id: 'ministries', label: 'Ministries' },
-  { id: 'sermons', label: 'Sermons' },
-  { id: 'events', label: 'Events' },
-  { id: 'giving', label: 'Giving + Forms' },
-]
-
-const eventCategories: Exclude<EventCategory, 'All'>[] = [
-  'Youth',
-  'Women',
-  'Men',
-  'Kids',
-  'Conference',
-  'Outreach',
+const adminTabs: { id: AdminTab; label: string; icon: ReactNode }[] = [
+  { id: 'overview', label: 'Command Center', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
+  { id: 'general', label: 'Site Identity', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+  { id: 'about', label: 'Story & Leaders', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> },
+  { id: 'ministries', label: 'Ministries', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
+  { id: 'sermons', label: 'Sermons', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+  { id: 'events', label: 'Events', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
+  { id: 'giving', label: 'Giving flow', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
 ]
 
 function updateArrayItem<T>(items: T[], index: number, nextItem: T) {
@@ -60,24 +52,6 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, '')
 }
 
-function formatSavedAt(value: string | null) {
-  if (!value) {
-    return 'Not saved yet'
-  }
-
-  return new Date(value).toLocaleString()
-}
-
-function downloadJson(filename: string, content: string) {
-  const blob = new Blob([content], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  anchor.click()
-  URL.revokeObjectURL(url)
-}
-
 function AdminSection({
   title,
   description,
@@ -90,15 +64,17 @@ function AdminSection({
   children: ReactNode
 }) {
   return (
-    <section className="admin-section">
-      <div className="admin-section-header">
+    <section className="bg-white border border-stone-200 shadow-sm mb-8 overflow-hidden">
+      <div className="px-8 py-6 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
         <div>
-          <h2>{title}</h2>
-          {description ? <p>{description}</p> : null}
+          <h2 className="font-display font-bold text-stone-900 text-lg uppercase tracking-tight">{title}</h2>
+          {description ? <p className="text-xs text-stone-400 mt-1 italic leading-relaxed">{description}</p> : null}
         </div>
-        {actions ? <div className="admin-inline-actions">{actions}</div> : null}
+        {actions ? <div className="flex items-center gap-3">{actions}</div> : null}
       </div>
-      {children}
+      <div className="p-8">
+        {children}
+      </div>
     </section>
   )
 }
@@ -117,15 +93,16 @@ function AdminField({
   type?: string
 }) {
   return (
-    <label className="admin-field">
-      <span>{label}</span>
+    <div className="flex flex-col gap-1.5 w-full">
+      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest pl-1">{label}</label>
       <input
+        className="w-full bg-stone-50 border border-stone-100 focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 text-sm rounded-sm px-4 py-2.5 outline-none transition-all placeholder:text-stone-300 italic"
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         type={type}
         value={value}
       />
-    </label>
+    </div>
   )
 }
 
@@ -143,15 +120,16 @@ function AdminTextarea({
   placeholder?: string
 }) {
   return (
-    <label className="admin-field admin-field-full">
-      <span>{label}</span>
+    <div className="flex flex-col gap-1.5 w-full">
+      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest pl-1">{label}</label>
       <textarea
+        className="w-full bg-stone-50 border border-stone-100 focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 text-sm rounded-sm px-4 py-2.5 outline-none transition-all placeholder:text-stone-300 italic"
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         rows={rows}
         value={value}
       />
-    </label>
+    </div>
   )
 }
 
@@ -167,16 +145,25 @@ function AdminSelectField({
   options: string[]
 }) {
   return (
-    <label className="admin-field">
-      <span>{label}</span>
-      <select onChange={(event) => onChange(event.target.value)} value={value}>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="flex flex-col gap-1.5 w-full">
+      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest pl-1">{label}</label>
+      <div className="relative">
+        <select 
+          className="w-full bg-stone-50 border border-stone-100 focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 text-sm rounded-sm px-4 py-2.5 outline-none transition-all appearance-none italic text-stone-600"
+          onChange={(event) => onChange(event.target.value)} 
+          value={value}
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-stone-300">
+           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -192,52 +179,40 @@ function StringListEditor({
   addLabel: string
 }) {
   return (
-    <div className="admin-list-editor">
-      <div className="admin-list-header">
-        <strong>{label}</strong>
+    <div className="flex flex-col gap-4 border border-stone-100 p-6 bg-stone-50/50">
+      <div className="flex items-center justify-between px-1">
+        <strong className="text-[10px] font-extrabold text-stone-900 uppercase tracking-[0.2em]">{label}</strong>
         <button
-          className="button button-ghost"
+          className="text-[10px] font-bold text-primary-500 hover:text-stone-900 uppercase tracking-widest transition-colors flex items-center gap-1"
           onClick={() => onChange([...items, ''])}
           type="button"
         >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           {addLabel}
         </button>
       </div>
 
-      <div className="admin-list-stack">
+      <div className="flex flex-col gap-3">
         {items.map((item, index) => (
-          <div className="admin-list-row" key={`${label}-${index}`}>
+          <div className="group flex gap-2" key={`${label}-${index}`}>
             <textarea
+              className="flex-1 bg-white border border-stone-100 focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 text-xs rounded-sm px-3 py-2 outline-none transition-all placeholder:text-stone-300 italic"
               onChange={(event) =>
                 onChange(updateArrayItem(items, index, event.target.value))
               }
-              rows={3}
+              rows={2}
               value={item}
             />
-            <div className="admin-item-controls">
-              <button
-                className="button button-ghost"
-                disabled={index === 0}
-                onClick={() => onChange(moveArrayItem(items, index, index - 1))}
-                type="button"
-              >
-                Up
-              </button>
-              <button
-                className="button button-ghost"
-                disabled={index === items.length - 1}
-                onClick={() => onChange(moveArrayItem(items, index, index + 1))}
-                type="button"
-              >
-                Down
-              </button>
-              <button
-                className="button button-ghost danger-button"
-                onClick={() => onChange(removeArrayItem(items, index))}
-                type="button"
-              >
-                Remove
-              </button>
+            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+               <button className="p-1 text-stone-300 hover:text-stone-900 transition-colors disabled:opacity-30" disabled={index === 0} onClick={() => onChange(moveArrayItem(items, index, index - 1))} type="button">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+               </button>
+               <button className="p-1 text-stone-300 hover:text-stone-900 transition-colors disabled:opacity-30" disabled={index === items.length - 1} onClick={() => onChange(moveArrayItem(items, index, index + 1))} type="button">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+               </button>
+               <button className="p-1 text-red-300 hover:text-red-600 transition-colors" onClick={() => onChange(removeArrayItem(items, index))} type="button">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+               </button>
             </div>
           </div>
         ))}
@@ -260,20 +235,15 @@ function RepeaterControls({
   onRemove: () => void
 }) {
   return (
-    <div className="admin-item-controls">
-      <button className="button button-ghost" disabled={index === 0} onClick={onMoveUp} type="button">
-        Up
+    <div className="flex gap-1">
+      <button className="p-1.5 bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-900 transition-colors disabled:opacity-30 rounded-sm" disabled={index === 0} onClick={onMoveUp} type="button">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
       </button>
-      <button
-        className="button button-ghost"
-        disabled={index === total - 1}
-        onClick={onMoveDown}
-        type="button"
-      >
-        Down
+      <button className="p-1.5 bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-900 transition-colors disabled:opacity-30 rounded-sm" disabled={index === total - 1} onClick={onMoveDown} type="button">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
       </button>
-      <button className="button button-ghost danger-button" onClick={onRemove} type="button">
-        Remove
+      <button className="p-1.5 bg-red-50 text-red-500 hover:bg-red-100 transition-colors rounded-sm ml-2" onClick={onRemove} type="button">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
       </button>
     </div>
   )
@@ -291,22 +261,21 @@ export function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview')
   const [importText, setImportText] = useState('')
   const [statusMessage, setStatusMessage] = useState(
-    'Changes save automatically in this browser. Export JSON when you want a shareable snapshot.',
+    'Changes save automatically. Export JSON when you want a portable snapshot.',
   )
   const [isPending, startTransition] = useTransition()
 
   useDocumentMeta(
     'Admin CMS',
-    'Manage church pages, events, sermons, ministries, leaders, giving, and form integrations from one dashboard.',
+    'Manage church pages, events, sermons, ministries, and site identity from your dashboard.',
   )
 
   const stats = useMemo(
     () => [
-      { label: 'Pages', value: String(content.pageSummaries.length) },
-      { label: 'Sermons', value: String(content.sermons.length) },
-      { label: 'Events', value: String(content.events.length) },
-      { label: 'Ministries', value: String(content.ministries.length) },
-      { label: 'Leaders', value: String(content.leaders.length) },
+      { label: 'Sermons', value: String(content.sermons.length), color: 'text-blue-500' },
+      { label: 'Events', value: String(content.events.length), color: 'text-orange-500' },
+      { label: 'Ministries', value: String(content.ministries.length), color: 'text-emerald-500' },
+      { label: 'Leaders', value: String(content.leaders.length), color: 'text-purple-500' },
     ],
     [content],
   )
@@ -324,635 +293,481 @@ export function AdminPage() {
       await navigator.clipboard.writeText(exportContent())
       setStatusMessage('CMS export copied to clipboard.')
     } catch {
-      setStatusMessage('Clipboard copy failed. Use Download JSON instead.')
+      setStatusMessage('Clipboard copy failed. Use Download JSON.')
     }
   }
 
   function handleDownloadExport() {
-    downloadJson('seattle-international-site-content.json', exportContent())
-    setStatusMessage('CMS export downloaded as JSON.')
+    const blob = new Blob([exportContent()], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'seattle-int-content-snap.json'
+    anchor.click()
+    URL.revokeObjectURL(url)
+    setStatusMessage('CMS export downloaded.')
   }
 
   function handleImport() {
     startTransition(() => {
       const result = importContent(importText)
       setStatusMessage(result.message)
-
-      if (result.ok) {
-        setImportText('')
-      }
-    })
-  }
-
-  function handleRestoreDefaults() {
-    if (
-      !window.confirm(
-        'Restore the default Phase 1 content? This will replace the current browser-saved CMS data.',
-      )
-    ) {
-      return
-    }
-
-    startTransition(() => {
-      restoreDefaults()
-      setStatusMessage('Default Phase 1 content restored successfully.')
+      if (result.ok) setImportText('')
     })
   }
 
   return (
-    <div className="admin-page">
-      <div className="admin-layout">
-        <aside className="admin-sidebar surface-card">
-          <div className="admin-brand">
-            <p className="eyebrow">Phase 2</p>
-            <h1>Admin CMS</h1>
-            <p>Manage the public website from one workspace and see updates on the live frontend immediately.</p>
-          </div>
+    <div className="min-h-screen flex bg-stone-50 font-sans text-stone-800">
+      
+      {/* Sidebar - Command Center Theme */}
+      <aside className="w-72 bg-[#0b162c] text-white flex flex-col fixed inset-y-0 z-30">
+        <div className="p-8 pb-4">
+           <p className="text-primary-500 font-bold uppercase tracking-[0.2em] text-[10px] mb-2">Phase 2</p>
+           <h1 className="font-display font-extrabold text-2xl tracking-tighter uppercase underline decoration-primary-500 decoration-2 underline-offset-8">Command Center</h1>
+        </div>
 
-          <div className="admin-status">
-            <span className="admin-badge">Auto-saved</span>
-            <span>Last saved: {formatSavedAt(lastSavedAt)}</span>
-          </div>
-
-          <nav className="admin-tab-list">
-            {adminTabs.map((tab) => (
-              <button
-                className={`admin-tab${activeTab === tab.id ? ' is-active' : ''}`}
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                type="button"
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="admin-sidebar-actions">
-            <Link className="button button-secondary" to="/">
-              View live site
-            </Link>
-            <button className="button button-ghost" onClick={handleCopyExport} type="button">
-              Copy JSON
-            </button>
-            <button className="button button-ghost" onClick={handleDownloadExport} type="button">
-              Download JSON
-            </button>
-            <button className="button button-ghost danger-button" onClick={handleRestoreDefaults} type="button">
-              Restore defaults
-            </button>
-          </div>
-        </aside>
-
-        <main className="admin-main">
-          <section className="admin-hero surface-card">
-            <div>
-              <p className="eyebrow">CMS foundation</p>
-              <h2>All public content is editable from here</h2>
-              <p>{statusMessage}</p>
-            </div>
-            <div className="admin-stats">
-              {stats.map((stat) => (
-                <article className="admin-stat-card" key={stat.label}>
-                  <strong>{stat.value}</strong>
-                  <span>{stat.label}</span>
-                </article>
+        <div className="px-8 mt-12 flex-1">
+           <nav className="flex flex-col gap-2">
+              {adminTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-3 px-4 py-3.5 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${activeTab === tab.id ? 'bg-primary-500 text-white shadow-xl shadow-primary-500/20' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
               ))}
-            </div>
-          </section>
+           </nav>
+        </div>
 
-          {activeTab === 'overview' ? (
-            <>
-              <AdminSection
-                description="Paste a previously exported content snapshot to replace the current browser-saved CMS state."
-                title="Import content"
+        <div className="p-8 border-t border-white/5 space-y-4">
+           <Link className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 hover:bg-white/20 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-sm" to="/">
+             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+             View live site
+           </Link>
+           <button onClick={() => { if(window.confirm('Restore default phase 1 state?')) restoreDefaults() }} className="w-full text-center text-[10px] text-red-400/50 hover:text-red-400 underline uppercase tracking-widest font-bold transition-colors">
+              Restore Defaults
+           </button>
+        </div>
+      </aside>
+
+      <main className="flex-1 ml-72">
+        {/* Header Bar */}
+        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-10 py-6 flex items-center justify-between">
+           <div className="flex items-center gap-4">
+              <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+                 System: <span className="text-stone-900">Auto-saved</span> 
+                 <span className="mx-3 opacity-20">|</span> 
+                 Last sync: <span className="text-stone-900">{lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString() : 'Ready'}</span>
+              </p>
+           </div>
+           <div className="flex gap-4">
+              <button 
+                onClick={handleCopyExport}
+                className="px-4 py-2 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-colors rounded-sm"
               >
-                <div className="admin-grid">
-                  <AdminTextarea
-                    label="Imported JSON"
-                    onChange={setImportText}
-                    placeholder="Paste exported site content JSON here"
-                    rows={10}
-                    value={importText}
-                  />
-                </div>
-                <div className="admin-inline-actions">
-                  <button
-                    className="button button-primary"
-                    disabled={!importText.trim() || isPending}
-                    onClick={handleImport}
-                    type="button"
-                  >
-                    {isPending ? 'Importing...' : 'Import JSON'}
-                  </button>
-                </div>
-              </AdminSection>
-
-              <AdminSection
-                description="This CMS is local-browser powered. For production multi-user editing, connect this layer to real auth and a backend CMS or database."
-                title="How this admin works"
+                Copy Snapshot
+              </button>
+              <button 
+                onClick={handleDownloadExport}
+                className="px-4 py-2 bg-primary-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-primary-600 transition-colors rounded-sm shadow-lg shadow-primary-500/10"
               >
-                <div className="admin-grid three-column">
-                  <article className="surface-card admin-note-card">
-                    <h3>Live preview</h3>
-                    <p>Changes here update the public routes immediately in the same browser session.</p>
-                  </article>
-                  <article className="surface-card admin-note-card">
-                    <h3>Persistence</h3>
-                    <p>Content is auto-saved into browser local storage and survives reloads on this device.</p>
-                  </article>
-                  <article className="surface-card admin-note-card">
-                    <h3>Portability</h3>
-                    <p>Use export/import JSON to move content snapshots between environments or preserve approved versions.</p>
-                  </article>
-                </div>
-              </AdminSection>
-            </>
-          ) : null}
+                Download JSON
+              </button>
+           </div>
+        </header>
 
-          {activeTab === 'general' ? (
-            <>
-              <AdminSection
-                description="These settings control global branding, homepage identity, address, and core church contact information."
-                title="Site identity and contact"
-              >
-                <div className="admin-grid">
-                  <AdminField label="Church name" onChange={(value) => patchContent((draft) => { draft.site.name = value })} value={content.site.name} />
-                  <AdminField label="Short name" onChange={(value) => patchContent((draft) => { draft.site.shortName = value })} value={content.site.shortName} />
-                  <AdminField label="Hero title" onChange={(value) => patchContent((draft) => { draft.site.heroTitle = value })} value={content.site.heroTitle} />
-                  <AdminField label="Tagline" onChange={(value) => patchContent((draft) => { draft.site.tagline = value })} value={content.site.tagline} />
-                  <AdminField label="Phone" onChange={(value) => patchContent((draft) => { draft.site.phone = value })} value={content.site.phone} />
-                  <AdminField label="Email" onChange={(value) => patchContent((draft) => { draft.site.email = value })} value={content.site.email} />
-                  <AdminField label="Address" onChange={(value) => patchContent((draft) => { draft.site.address = value })} value={content.site.address} />
-                  <AdminField label="Directions URL" onChange={(value) => patchContent((draft) => { draft.site.directionsUrl = value })} value={content.site.directionsUrl} />
-                  <AdminField label="Map embed URL" onChange={(value) => patchContent((draft) => { draft.site.mapEmbedUrl = value })} value={content.site.mapEmbedUrl} />
-                  <AdminField label="Watch online URL" onChange={(value) => patchContent((draft) => { draft.site.watchOnlineUrl = value })} value={content.site.watchOnlineUrl} />
-                  <AdminField label="Giving portal URL" onChange={(value) => patchContent((draft) => { draft.site.givingPortalUrl = value })} value={content.site.givingPortalUrl} />
-                  <AdminTextarea label="Welcome message" onChange={(value) => patchContent((draft) => { draft.site.welcomeMessage = value })} rows={5} value={content.site.welcomeMessage} />
-                  <AdminTextarea label="Site description" onChange={(value) => patchContent((draft) => { draft.site.description = value })} rows={4} value={content.site.description} />
-                </div>
-              </AdminSection>
+        <div className="p-10 max-w-6xl mx-auto">
+          {/* Active Status Alert */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium mb-10 flex items-center gap-3 rounded-sm italic"
+          >
+             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+             {statusMessage}
+          </motion.div>
 
-              <AdminSection title="Lists and quick links">
-                <div className="admin-grid two-column">
-                  <StringListEditor
-                    addLabel="Add office hour"
-                    items={content.site.officeHours}
-                    label="Office hours"
-                    onChange={(items) => patchContent((draft) => { draft.site.officeHours = items })}
-                  />
-                  <StringListEditor
-                    addLabel="Add trust signal"
-                    items={content.site.trustSignals}
-                    label="Trust signals"
-                    onChange={(items) => patchContent((draft) => { draft.site.trustSignals = items })}
-                  />
-                </div>
-              </AdminSection>
+          <AnimatePresence mode="wait">
+             {activeTab === 'overview' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="overview">
+                   <header className="mb-12">
+                      <p className="text-primary-500 font-bold uppercase tracking-[0.2em] text-[10px] mb-2 pl-1">Command Center</p>
+                      <h2 className="font-display font-bold text-4xl text-stone-900 mb-4">Hello, Seattle International Church.</h2>
+                      <p className="text-stone-500 text-sm italic font-medium">Site content is current and running on production.</p>
+                   </header>
 
-              <AdminSection
-                actions={
-                  <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                    draft.site.serviceTimes.push({ label: '', time: '', note: '' })
-                  })} type="button">
-                    Add service time
-                  </button>
-                }
-                title="Service times"
-              >
-                <div className="admin-repeater">
-                  {content.site.serviceTimes.map((time, index) => (
-                    <article className="surface-card admin-card" key={`${time.label}-${index}`}>
-                      <RepeaterControls
-                        index={index}
-                        onMoveDown={() => patchContent((draft) => {
-                          draft.site.serviceTimes = moveArrayItem(draft.site.serviceTimes, index, index + 1)
-                        })}
-                        onMoveUp={() => patchContent((draft) => {
-                          draft.site.serviceTimes = moveArrayItem(draft.site.serviceTimes, index, index - 1)
-                        })}
-                        onRemove={() => patchContent((draft) => {
-                          draft.site.serviceTimes = removeArrayItem(draft.site.serviceTimes, index)
-                        })}
-                        total={content.site.serviceTimes.length}
-                      />
-                      <div className="admin-grid">
-                        <AdminField label="Label" onChange={(value) => patchContent((draft) => { draft.site.serviceTimes[index].label = value })} value={time.label} />
-                        <AdminField label="Time" onChange={(value) => patchContent((draft) => { draft.site.serviceTimes[index].time = value })} value={time.time} />
-                        <AdminField label="Note" onChange={(value) => patchContent((draft) => { draft.site.serviceTimes[index].note = value })} value={time.note ?? ''} />
+                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                      {stats.map((stat) => (
+                        <article key={stat.label} className="bg-white p-8 border border-stone-100 shadow-sm flex flex-col items-center group">
+                           <strong className={`text-4xl font-extrabold mb-2 ${stat.color} group-hover:scale-110 transition-transform`}>{stat.value}</strong>
+                           <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{stat.label}</span>
+                        </article>
+                      ))}
+                   </div>
+
+                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                      <div className="bg-[#0b162c] p-10 text-white rounded-sm overflow-hidden relative isolate">
+                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/20 translate-x-12 translate-y-[-12px] rotate-45 pointer-events-none" />
+                         <p className="text-primary-500 font-bold text-[10px] uppercase tracking-widest mb-2">Live Preview</p>
+                         <h3 className="font-display text-2xl font-bold mb-6">Current Hero Focus</h3>
+                         <div className="p-6 bg-white/5 border border-white/10 rounded-sm mb-8 italic">
+                            <p className="text-white/80">"{content.site.heroTitle}"</p>
+                         </div>
+                         <button onClick={() => setActiveTab('general')} className="px-6 py-3 bg-white text-stone-900 font-bold text-[10px] uppercase tracking-widest hover:bg-stone-100 transition-colors">Edit Home Hero</button>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </AdminSection>
 
-              <AdminSection
-                actions={
-                  <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                    draft.site.socials.push({ label: '', handle: '', url: '' })
-                  })} type="button">
-                    Add social link
-                  </button>
-                }
-                title="Social links"
-              >
-                <div className="admin-repeater">
-                  {content.site.socials.map((social, index) => (
-                    <article className="surface-card admin-card" key={`${social.label}-${index}`}>
-                      <RepeaterControls
-                        index={index}
-                        onMoveDown={() => patchContent((draft) => {
-                          draft.site.socials = moveArrayItem(draft.site.socials, index, index + 1)
-                        })}
-                        onMoveUp={() => patchContent((draft) => {
-                          draft.site.socials = moveArrayItem(draft.site.socials, index, index - 1)
-                        })}
-                        onRemove={() => patchContent((draft) => {
-                          draft.site.socials = removeArrayItem(draft.site.socials, index)
-                        })}
-                        total={content.site.socials.length}
-                      />
-                      <div className="admin-grid">
-                        <AdminField label="Label" onChange={(value) => patchContent((draft) => { draft.site.socials[index].label = value })} value={social.label} />
-                        <AdminField label="Handle or subtitle" onChange={(value) => patchContent((draft) => { draft.site.socials[index].handle = value })} value={social.handle} />
-                        <AdminField label="URL" onChange={(value) => patchContent((draft) => { draft.site.socials[index].url = value })} value={social.url} />
+                      <div className="bg-white border border-stone-200 p-10 flex flex-col justify-center gap-8">
+                          <div>
+                             <h3 className="font-display text-2xl font-bold text-stone-900 mb-2 uppercase tracking-tight">Import State</h3>
+                             <p className="text-stone-400 text-xs italic">Paste a portable content snapshot to override current state.</p>
+                          </div>
+                          <textarea 
+                            onChange={(e) => setImportText(e.target.value)} 
+                            value={importText}
+                            placeholder="Paste JSON content here..."
+                            className="bg-stone-50 border border-stone-100 p-4 text-xs italic outline-none focus:ring-1 focus:ring-primary-500/20"
+                            rows={3}
+                          />
+                          <button 
+                            onClick={handleImport}
+                            disabled={!importText.trim() || isPending}
+                            className="w-full py-4 bg-stone-900 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-stone-800 transition-colors disabled:opacity-30"
+                          >
+                             {isPending ? 'Syncing...' : 'Sync Snapshot'}
+                          </button>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </AdminSection>
+                   </div>
 
-              <AdminSection title="Homepage visit highlights">
-                <div className="admin-repeater">
-                  {content.visitHighlights.map((highlight, index) => (
-                    <article className="surface-card admin-card" key={`${highlight.title}-${index}`}>
-                      <RepeaterControls
-                        index={index}
-                        onMoveDown={() => patchContent((draft) => {
-                          draft.visitHighlights = moveArrayItem(draft.visitHighlights, index, index + 1)
-                        })}
-                        onMoveUp={() => patchContent((draft) => {
-                          draft.visitHighlights = moveArrayItem(draft.visitHighlights, index, index - 1)
-                        })}
-                        onRemove={() => patchContent((draft) => {
-                          draft.visitHighlights = removeArrayItem(draft.visitHighlights, index)
-                        })}
-                        total={content.visitHighlights.length}
-                      />
-                      <div className="admin-grid">
-                        <AdminField label="Title" onChange={(value) => patchContent((draft) => { draft.visitHighlights[index].title = value })} value={highlight.title} />
-                        <AdminTextarea label="Description" onChange={(value) => patchContent((draft) => { draft.visitHighlights[index].description = value })} rows={4} value={highlight.description} />
+                   <AdminSection title="Latest Sermon Preview" description="How the latest message appears on the homepage and archive.">
+                      <div className="flex gap-8 items-center bg-stone-50 p-6 rounded-sm border border-stone-100">
+                         <div className="w-32 h-32 bg-stone-900 shrink-0 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                         </div>
+                         <div>
+                            <h4 className="font-display text-xl font-bold text-stone-900 mb-1">{content.sermons[0]?.title}</h4>
+                            <p className="text-stone-400 text-xs font-medium uppercase tracking-widest mb-4">{content.sermons[0]?.speaker} • {content.sermons[0]?.series}</p>
+                            <button onClick={() => setActiveTab('sermons')} className="text-primary-500 text-[10px] font-extrabold uppercase tracking-widest hover:text-stone-900 transition-colors border-b border-primary-500/20 pb-1">Edit all sermons →</button>
+                         </div>
                       </div>
-                    </article>
-                  ))}
-                </div>
-                <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                  draft.visitHighlights.push({ title: '', description: '' })
-                })} type="button">
-                  Add visit highlight
-                </button>
-              </AdminSection>
+                   </AdminSection>
+                </motion.div>
+             )}
 
-              <AdminSection title="Page labels and descriptions">
-                <div className="admin-repeater">
-                  {content.pageSummaries.map((page, index) => (
-                    <article className="surface-card admin-card" key={page.path}>
-                      <p className="admin-static-label">Route path</p>
-                      <p className="admin-static-value">{page.path}</p>
-                      <div className="admin-grid">
-                        <AdminField label="Navigation label" onChange={(value) => patchContent((draft) => { draft.pageSummaries[index].title = value })} value={page.title} />
-                        <AdminTextarea label="Description" onChange={(value) => patchContent((draft) => { draft.pageSummaries[index].description = value })} rows={3} value={page.description} />
+             {activeTab === 'general' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="general">
+                   <AdminSection 
+                     title="Global Site Identity" 
+                     description="Manage branding, hero content, and core contact information."
+                   >
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <AdminField label="Church name" onChange={(v) => patchContent(d => { d.site.name = v })} value={content.site.name} />
+                       <AdminField label="Short name" onChange={(v) => patchContent(d => { d.site.shortName = v })} value={content.site.shortName} />
+                       <AdminField label="Hero title" onChange={(v) => patchContent(d => { d.site.heroTitle = v })} value={content.site.heroTitle} />
+                       <AdminField label="Tagline" onChange={(v) => patchContent(d => { d.site.tagline = v })} value={content.site.tagline} />
+                       <AdminField label="Phone" onChange={(v) => patchContent(d => { d.site.phone = v })} value={content.site.phone} />
+                       <AdminField label="Email" onChange={(v) => patchContent(d => { d.site.email = v })} value={content.site.email} />
+                       <AdminField label="Address" onChange={(v) => patchContent(d => { d.site.address = v })} value={content.site.address} />
+                       <AdminField label="Directions URL" onChange={(v) => patchContent(d => { d.site.directionsUrl = v })} value={content.site.directionsUrl} />
+                       <AdminField label="Map embed URL" onChange={(v) => patchContent(d => { d.site.mapEmbedUrl = v })} value={content.site.mapEmbedUrl} />
+                       <AdminField label="Watch online URL" onChange={(v) => patchContent(d => { d.site.watchOnlineUrl = v })} value={content.site.watchOnlineUrl} />
+                       <AdminField label="Giving portal URL" onChange={(v) => patchContent(d => { d.site.givingPortalUrl = v })} value={content.site.givingPortalUrl} />
+                       <AdminTextarea label="Welcome message" onChange={(v) => patchContent(d => { d.site.welcomeMessage = v })} rows={5} value={content.site.welcomeMessage} />
+                     </div>
+                   </AdminSection>
+
+                   <AdminSection title="Service Schedule">
+                      <div className="flex flex-col gap-6">
+                         {content.site.serviceTimes.map((time, index) => (
+                           <div key={index} className="flex gap-8 group bg-stone-50 p-8 border border-stone-100">
+                             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <AdminField label="Label" onChange={v => patchContent(d => { d.site.serviceTimes[index].label = v })} value={time.label} />
+                                <AdminField label="Time" onChange={v => patchContent(d => { d.site.serviceTimes[index].time = v })} value={time.time} />
+                                <AdminField label="Note" onChange={v => patchContent(d => { d.site.serviceTimes[index].note = v ?? '' })} value={time.note ?? ''} />
+                             </div>
+                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center pt-4">
+                                <RepeaterControls 
+                                  index={index} 
+                                  total={content.site.serviceTimes.length}
+                                  onMoveUp={() => patchContent(d => { d.site.serviceTimes = moveArrayItem(d.site.serviceTimes, index, index - 1) })}
+                                  onMoveDown={() => patchContent(d => { d.site.serviceTimes = moveArrayItem(d.site.serviceTimes, index, index + 1) })}
+                                  onRemove={() => patchContent(d => { d.site.serviceTimes = removeArrayItem(d.site.serviceTimes, index) })}
+                                />
+                             </div>
+                           </div>
+                         ))}
+                         <button onClick={() => patchContent(d => { d.site.serviceTimes.push({ label: '', time: '', note: '' }) })} className="py-4 border border-dashed border-stone-300 text-[10px] font-bold text-stone-400 uppercase tracking-widest hover:border-primary-500 hover:text-primary-500 transition-all">Add Service Time</button>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </AdminSection>
-            </>
-          ) : null}
+                   </AdminSection>
 
-          {activeTab === 'about' ? (
-            <>
-              <AdminSection title="About page copy">
-                <div className="admin-grid">
-                  <AdminTextarea label="Mission" onChange={(value) => patchContent((draft) => { draft.about.mission = value })} rows={4} value={content.about.mission} />
-                  <AdminTextarea label="Vision" onChange={(value) => patchContent((draft) => { draft.about.vision = value })} rows={4} value={content.about.vision} />
-                </div>
-                <div className="admin-grid two-column">
-                  <StringListEditor addLabel="Add core value" items={content.about.values} label="Core values" onChange={(items) => patchContent((draft) => { draft.about.values = items })} />
-                  <StringListEditor addLabel="Add belief statement" items={content.about.statementOfFaith} label="Statement of faith" onChange={(items) => patchContent((draft) => { draft.about.statementOfFaith = items })} />
-                </div>
-                <StringListEditor addLabel="Add history entry" items={content.about.history} label="History timeline" onChange={(items) => patchContent((draft) => { draft.about.history = items })} />
-              </AdminSection>
-
-              <AdminSection
-                actions={
-                  <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                    draft.leaders.push({ name: '', role: '', bio: '', focus: '', email: '' })
-                  })} type="button">
-                    Add leader
-                  </button>
-                }
-                title="Leadership team"
-              >
-                <div className="admin-repeater">
-                  {content.leaders.map((leader, index) => (
-                    <article className="surface-card admin-card" key={`${leader.email}-${index}`}>
-                      <RepeaterControls
-                        index={index}
-                        onMoveDown={() => patchContent((draft) => {
-                          draft.leaders = moveArrayItem(draft.leaders, index, index + 1)
-                        })}
-                        onMoveUp={() => patchContent((draft) => {
-                          draft.leaders = moveArrayItem(draft.leaders, index, index - 1)
-                        })}
-                        onRemove={() => patchContent((draft) => {
-                          draft.leaders = removeArrayItem(draft.leaders, index)
-                        })}
-                        total={content.leaders.length}
-                      />
-                      <div className="admin-grid">
-                        <AdminField label="Name" onChange={(value) => patchContent((draft) => { draft.leaders[index].name = value })} value={leader.name} />
-                        <AdminField label="Role" onChange={(value) => patchContent((draft) => { draft.leaders[index].role = value })} value={leader.role} />
-                        <AdminField label="Email" onChange={(value) => patchContent((draft) => { draft.leaders[index].email = value })} value={leader.email} />
-                        <AdminField label="Primary focus" onChange={(value) => patchContent((draft) => { draft.leaders[index].focus = value })} value={leader.focus} />
-                        <AdminTextarea label="Bio" onChange={(value) => patchContent((draft) => { draft.leaders[index].bio = value })} rows={5} value={leader.bio} />
+                   <AdminSection title="Quick Link Lists">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <StringListEditor addLabel="Add hour" items={content.site.officeHours} label="Office Hours" onChange={v => patchContent(d => { d.site.officeHours = v })} />
+                         <StringListEditor addLabel="Add social" items={content.site.socials.map(s => `${s.label}|${s.url}`)} label="Social List (Label|URL)" onChange={v => patchContent(d => { d.site.socials = v.map(str => { const [label, url] = str.split('|'); return { label, url, handle: '' } }) })} />
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </AdminSection>
-            </>
-          ) : null}
+                   </AdminSection>
 
-          {activeTab === 'ministries' ? (
-            <AdminSection
-              actions={
-                <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                  draft.ministries.push({
-                    slug: '',
-                    name: '',
-                    audience: '',
-                    summary: '',
-                    description: '',
-                    meetingTime: '',
-                    leader: '',
-                    email: '',
-                    rhythm: [''],
-                    opportunities: [''],
-                  })
-                })} type="button">
-                  Add ministry
-                </button>
-              }
-              title="Ministries CMS"
-            >
-              <div className="admin-repeater">
-                {content.ministries.map((ministry, index) => (
-                  <article className="surface-card admin-card" key={`${ministry.slug}-${index}`}>
-                    <RepeaterControls
-                      index={index}
-                      onMoveDown={() => patchContent((draft) => {
-                        draft.ministries = moveArrayItem(draft.ministries, index, index + 1)
-                      })}
-                      onMoveUp={() => patchContent((draft) => {
-                        draft.ministries = moveArrayItem(draft.ministries, index, index - 1)
-                      })}
-                      onRemove={() => patchContent((draft) => {
-                        draft.ministries = removeArrayItem(draft.ministries, index)
-                      })}
-                      total={content.ministries.length}
-                    />
-                    <div className="admin-grid">
-                      <AdminField
-                        label="Name"
-                        onChange={(value) =>
-                          patchContent((draft) => {
-                            draft.ministries[index].name = value
-                            if (!draft.ministries[index].slug) {
-                              draft.ministries[index].slug = slugify(value)
-                            }
-                          })
-                        }
-                        value={ministry.name}
-                      />
-                      <AdminField label="Slug" onChange={(value) => patchContent((draft) => { draft.ministries[index].slug = slugify(value) })} value={ministry.slug} />
-                      <AdminField label="Audience" onChange={(value) => patchContent((draft) => { draft.ministries[index].audience = value })} value={ministry.audience} />
-                      <AdminField label="Leader" onChange={(value) => patchContent((draft) => { draft.ministries[index].leader = value })} value={ministry.leader} />
-                      <AdminField label="Leader email" onChange={(value) => patchContent((draft) => { draft.ministries[index].email = value })} value={ministry.email} />
-                      <AdminField label="Meeting time" onChange={(value) => patchContent((draft) => { draft.ministries[index].meetingTime = value })} value={ministry.meetingTime} />
-                      <AdminTextarea label="Summary" onChange={(value) => patchContent((draft) => { draft.ministries[index].summary = value })} rows={4} value={ministry.summary} />
-                      <AdminTextarea label="Description" onChange={(value) => patchContent((draft) => { draft.ministries[index].description = value })} rows={5} value={ministry.description} />
-                    </div>
-                    <div className="admin-grid two-column">
-                      <StringListEditor addLabel="Add rhythm" items={ministry.rhythm} label="Rhythm and activities" onChange={(items) => patchContent((draft) => { draft.ministries[index].rhythm = items })} />
-                      <StringListEditor addLabel="Add opportunity" items={ministry.opportunities} label="Serving opportunities" onChange={(items) => patchContent((draft) => { draft.ministries[index].opportunities = items })} />
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </AdminSection>
-          ) : null}
-
-          {activeTab === 'sermons' ? (
-            <AdminSection
-              actions={
-                <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                  draft.sermons.unshift({
-                    slug: '',
-                    title: '',
-                    speaker: '',
-                    date: '',
-                    series: '',
-                    scripture: '',
-                    summary: '',
-                    watchUrl: '',
-                    embedUrl: '',
-                    notesUrl: '',
-                  })
-                })} type="button">
-                  Add sermon
-                </button>
-              }
-              title="Sermons CMS"
-            >
-              <div className="admin-repeater">
-                {content.sermons.map((sermon, index) => (
-                  <article className="surface-card admin-card" key={`${sermon.slug}-${index}`}>
-                    <RepeaterControls
-                      index={index}
-                      onMoveDown={() => patchContent((draft) => {
-                        draft.sermons = moveArrayItem(draft.sermons, index, index + 1)
-                      })}
-                      onMoveUp={() => patchContent((draft) => {
-                        draft.sermons = moveArrayItem(draft.sermons, index, index - 1)
-                      })}
-                      onRemove={() => patchContent((draft) => {
-                        draft.sermons = removeArrayItem(draft.sermons, index)
-                      })}
-                      total={content.sermons.length}
-                    />
-                    <div className="admin-grid">
-                      <AdminField label="Title" onChange={(value) => patchContent((draft) => { draft.sermons[index].title = value })} value={sermon.title} />
-                      <AdminField label="Slug" onChange={(value) => patchContent((draft) => { draft.sermons[index].slug = slugify(value) })} value={sermon.slug} />
-                      <AdminField label="Speaker" onChange={(value) => patchContent((draft) => { draft.sermons[index].speaker = value })} value={sermon.speaker} />
-                      <AdminField label="Series" onChange={(value) => patchContent((draft) => { draft.sermons[index].series = value })} value={sermon.series} />
-                      <AdminField label="Date" onChange={(value) => patchContent((draft) => { draft.sermons[index].date = value })} type="date" value={sermon.date} />
-                      <AdminField label="Scripture" onChange={(value) => patchContent((draft) => { draft.sermons[index].scripture = value })} value={sermon.scripture} />
-                      <AdminField label="Watch URL" onChange={(value) => patchContent((draft) => { draft.sermons[index].watchUrl = value })} value={sermon.watchUrl} />
-                      <AdminField label="Embed URL" onChange={(value) => patchContent((draft) => { draft.sermons[index].embedUrl = value })} value={sermon.embedUrl ?? ''} />
-                      <AdminField label="Notes URL" onChange={(value) => patchContent((draft) => { draft.sermons[index].notesUrl = value })} value={sermon.notesUrl ?? ''} />
-                      <AdminTextarea label="Summary" onChange={(value) => patchContent((draft) => { draft.sermons[index].summary = value })} rows={4} value={sermon.summary} />
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </AdminSection>
-          ) : null}
-
-          {activeTab === 'events' ? (
-            <AdminSection
-              actions={
-                <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                  draft.events.push({
-                    slug: '',
-                    title: '',
-                    category: 'Conference',
-                    start: '',
-                    end: '',
-                    location: '',
-                    summary: '',
-                    details: [''],
-                    actionLabel: '',
-                    actionUrl: '',
-                    contactEmail: '',
-                  })
-                })} type="button">
-                  Add event
-                </button>
-              }
-              title="Events CMS"
-            >
-              <div className="admin-repeater">
-                {content.events.map((event, index) => (
-                  <article className="surface-card admin-card" key={`${event.slug}-${index}`}>
-                    <RepeaterControls
-                      index={index}
-                      onMoveDown={() => patchContent((draft) => {
-                        draft.events = moveArrayItem(draft.events, index, index + 1)
-                      })}
-                      onMoveUp={() => patchContent((draft) => {
-                        draft.events = moveArrayItem(draft.events, index, index - 1)
-                      })}
-                      onRemove={() => patchContent((draft) => {
-                        draft.events = removeArrayItem(draft.events, index)
-                      })}
-                      total={content.events.length}
-                    />
-                    <div className="admin-grid">
-                      <AdminField label="Title" onChange={(value) => patchContent((draft) => { draft.events[index].title = value })} value={event.title} />
-                      <AdminField label="Slug" onChange={(value) => patchContent((draft) => { draft.events[index].slug = slugify(value) })} value={event.slug} />
-                      <AdminSelectField label="Category" onChange={(value) => patchContent((draft) => { draft.events[index].category = value as Exclude<EventCategory, 'All'> })} options={eventCategories} value={event.category} />
-                      <AdminField label="Start" onChange={(value) => patchContent((draft) => { draft.events[index].start = value })} placeholder="2026-04-12T09:00:00" value={event.start} />
-                      <AdminField label="End" onChange={(value) => patchContent((draft) => { draft.events[index].end = value })} placeholder="2026-04-12T12:00:00" value={event.end ?? ''} />
-                      <AdminField label="Location" onChange={(value) => patchContent((draft) => { draft.events[index].location = value })} value={event.location} />
-                      <AdminField label="Action label" onChange={(value) => patchContent((draft) => { draft.events[index].actionLabel = value })} value={event.actionLabel} />
-                      <AdminField label="Action URL" onChange={(value) => patchContent((draft) => { draft.events[index].actionUrl = value })} value={event.actionUrl} />
-                      <AdminField label="Contact email" onChange={(value) => patchContent((draft) => { draft.events[index].contactEmail = value })} value={event.contactEmail} />
-                      <AdminTextarea label="Summary" onChange={(value) => patchContent((draft) => { draft.events[index].summary = value })} rows={4} value={event.summary} />
-                    </div>
-                    <StringListEditor addLabel="Add event detail" items={event.details} label="Detail bullets" onChange={(items) => patchContent((draft) => { draft.events[index].details = items })} />
-                  </article>
-                ))}
-              </div>
-            </AdminSection>
-          ) : null}
-
-          {activeTab === 'giving' ? (
-            <>
-              <AdminSection title="Giving page">
-                <AdminTextarea label="Giving intro" onChange={(value) => patchContent((draft) => { draft.giving.intro = value })} rows={5} value={content.giving.intro} />
-                <div className="admin-repeater">
-                  {content.giving.options.map((option, index) => (
-                    <article className="surface-card admin-card" key={`${option.title}-${index}`}>
-                      <RepeaterControls
-                        index={index}
-                        onMoveDown={() => patchContent((draft) => {
-                          draft.giving.options = moveArrayItem(draft.giving.options, index, index + 1)
-                        })}
-                        onMoveUp={() => patchContent((draft) => {
-                          draft.giving.options = moveArrayItem(draft.giving.options, index, index - 1)
-                        })}
-                        onRemove={() => patchContent((draft) => {
-                          draft.giving.options = removeArrayItem(draft.giving.options, index)
-                        })}
-                        total={content.giving.options.length}
-                      />
-                      <div className="admin-grid">
-                        <AdminField label="Title" onChange={(value) => patchContent((draft) => { draft.giving.options[index].title = value })} value={option.title} />
-                        <AdminField label="Action label" onChange={(value) => patchContent((draft) => { draft.giving.options[index].actionLabel = value })} value={option.actionLabel} />
-                        <AdminField label="Action URL" onChange={(value) => patchContent((draft) => { draft.giving.options[index].actionUrl = value })} value={option.actionUrl} />
-                        <AdminTextarea label="Summary" onChange={(value) => patchContent((draft) => { draft.giving.options[index].summary = value })} rows={4} value={option.summary} />
-                        <AdminTextarea label="Note" onChange={(value) => patchContent((draft) => { draft.giving.options[index].note = value })} rows={4} value={option.note} />
+                   <AdminSection title="What to Expect Highlights" description="These highlights appear on the 'Plan Your Visit' page.">
+                      <div className="flex flex-col gap-6">
+                         {content.visitHighlights.map((high, index) => (
+                           <div key={index} className="flex gap-8 group bg-stone-50 p-8 border border-stone-100">
+                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <AdminField label="Title" onChange={v => patchContent(d => { d.visitHighlights[index].title = v })} value={high.title} />
+                                <AdminField label="Summary" onChange={v => patchContent(d => { d.visitHighlights[index].description = v })} value={high.description} />
+                             </div>
+                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center pt-4">
+                                <RepeaterControls 
+                                  index={index} 
+                                  total={content.visitHighlights.length}
+                                  onMoveUp={() => patchContent(d => { d.visitHighlights = moveArrayItem(d.visitHighlights, index, index - 1) })}
+                                  onMoveDown={() => patchContent(d => { d.visitHighlights = moveArrayItem(d.visitHighlights, index, index + 1) })}
+                                  onRemove={() => patchContent(d => { d.visitHighlights = removeArrayItem(d.visitHighlights, index) })}
+                                />
+                             </div>
+                           </div>
+                         ))}
+                         <button onClick={() => patchContent(d => { d.visitHighlights.push({ title: '', description: '' }) })} className="py-4 border border-dashed border-stone-300 text-[10px] font-bold text-stone-400 uppercase tracking-widest hover:border-primary-500 hover:text-primary-500 transition-all">Add Highlight</button>
                       </div>
-                    </article>
-                  ))}
-                </div>
-                <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                  draft.giving.options.push({ title: '', summary: '', actionLabel: '', actionUrl: '', note: '' })
-                })} type="button">
-                  Add giving option
-                </button>
-              </AdminSection>
+                   </AdminSection>
+                </motion.div>
+             )}
 
-              <AdminSection title="Giving FAQ">
-                <div className="admin-repeater">
-                  {content.giving.faqs.map((faq, index) => (
-                    <article className="surface-card admin-card" key={`${faq.question}-${index}`}>
-                      <RepeaterControls
-                        index={index}
-                        onMoveDown={() => patchContent((draft) => {
-                          draft.giving.faqs = moveArrayItem(draft.giving.faqs, index, index + 1)
-                        })}
-                        onMoveUp={() => patchContent((draft) => {
-                          draft.giving.faqs = moveArrayItem(draft.giving.faqs, index, index - 1)
-                        })}
-                        onRemove={() => patchContent((draft) => {
-                          draft.giving.faqs = removeArrayItem(draft.giving.faqs, index)
-                        })}
-                        total={content.giving.faqs.length}
-                      />
-                      <div className="admin-grid">
-                        <AdminField label="Question" onChange={(value) => patchContent((draft) => { draft.giving.faqs[index].question = value })} value={faq.question} />
-                        <AdminTextarea label="Answer" onChange={(value) => patchContent((draft) => { draft.giving.faqs[index].answer = value })} rows={4} value={faq.answer} />
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                <button className="button button-ghost" onClick={() => patchContent((draft) => {
-                  draft.giving.faqs.push({ question: '', answer: '' })
-                })} type="button">
-                  Add FAQ item
-                </button>
-              </AdminSection>
+             {activeTab === 'about' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="about">
+                    <AdminSection title="Editorial Story" description="Manage the church's mission, vision, and core theological beliefs.">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                          <AdminTextarea label="Mission Statement" onChange={v => patchContent(d => { d.about.mission = v })} rows={5} value={content.about.mission} />
+                          <AdminTextarea label="Vision Statement" onChange={v => patchContent(d => { d.about.vision = v })} rows={5} value={content.about.vision} />
+                       </div>
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                          <StringListEditor addLabel="Add value" items={content.about.values} label="Core Values" onChange={v => patchContent(d => { d.about.values = v })} />
+                          <StringListEditor addLabel="Add belief" items={content.about.statementOfFaith} label="Statement of Faith" onChange={v => patchContent(d => { d.about.statementOfFaith = v })} />
+                          <StringListEditor addLabel="Add event" items={content.about.history} label="Church History Timeline" onChange={v => patchContent(d => { d.about.history = v })} />
+                       </div>
+                    </AdminSection>
 
-              <AdminSection title="Form integrations">
-                <div className="admin-repeater">
-                  {Object.entries(content.forms).map(([key, form]) => (
-                    <article className="surface-card admin-card" key={key}>
-                      <p className="admin-static-label">Form</p>
-                      <p className="admin-static-value">{key}</p>
-                      <div className="admin-grid">
-                        <AdminField label="Endpoint" onChange={(value) => patchContent((draft) => { draft.forms[key as keyof SiteContent['forms']].endpoint = value })} value={form.endpoint} />
-                        <AdminField label="Email subject" onChange={(value) => patchContent((draft) => { draft.forms[key as keyof SiteContent['forms']].subject = value })} value={form.subject} />
-                        <AdminTextarea label="Success message" onChange={(value) => patchContent((draft) => { draft.forms[key as keyof SiteContent['forms']].successMessage = value })} rows={4} value={form.successMessage} />
+                    <AdminSection title="Leadership Directory">
+                        <div className="flex flex-col gap-6">
+                           {content.leaders.map((leader, index) => (
+                             <div key={index} className="flex flex-col group bg-stone-50 p-8 border border-stone-100 relative">
+                                <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <RepeaterControls 
+                                      index={index} 
+                                      total={content.leaders.length}
+                                      onMoveUp={() => patchContent(d => { d.leaders = moveArrayItem(d.leaders, index, index - 1) })}
+                                      onMoveDown={() => patchContent(d => { d.leaders = moveArrayItem(d.leaders, index, index + 1) })}
+                                      onRemove={() => patchContent(d => { d.leaders = removeArrayItem(d.leaders, index) })}
+                                   />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                                   <AdminField label="Full Name" onChange={v => patchContent(d => { d.leaders[index].name = v })} value={leader.name} />
+                                   <AdminField label="Official Role" onChange={v => patchContent(d => { d.leaders[index].role = v })} value={leader.role} />
+                                   <AdminField label="Primary Focus" onChange={v => patchContent(d => { d.leaders[index].focus = v })} value={leader.focus} />
+                                   <AdminField label="Contact Email" onChange={v => patchContent(d => { d.leaders[index].email = v })} value={leader.email} />
+                                </div>
+                                <AdminTextarea label="Professional Bio" onChange={v => patchContent(d => { d.leaders[index].bio = v })} rows={3} value={leader.bio} />
+                             </div>
+                           ))}
+                           <button onClick={() => patchContent(d => { d.leaders.push({ name: '', role: '', bio: '', focus: '', email: '' }) })} className="py-4 border border-dashed border-stone-300 text-[10px] font-bold text-stone-400 uppercase tracking-widest hover:border-primary-500 hover:text-primary-500 transition-all">Add Staff Member</button>
+                        </div>
+                    </AdminSection>
+                </motion.div>
+             )}
+
+             {activeTab === 'sermons' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="sermons">
+                   <AdminSection 
+                     title="Sermon Repository" 
+                     description="Archive of all teaching series. Latest added sermon appears as featured on the site."
+                     actions={
+                        <button onClick={() => patchContent(d => { d.sermons.unshift({ slug: '', title: '', speaker: '', date: '', series: '', scripture: '', summary: '', watchUrl: '', embedUrl: '', notesUrl: '' }) })} className="px-6 py-2.5 bg-primary-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-primary-600 transition-colors rounded-sm shadow-lg shadow-primary-500/10">Add Sermon</button>
+                     }
+                   >
+                      <div className="flex flex-col gap-6">
+                        {content.sermons.map((sermon, index) => (
+                           <div key={index} className="flex flex-col group bg-stone-50 border border-stone-100 relative">
+                               <div className="flex items-center justify-between px-8 py-4 border-b border-stone-100 bg-stone-100/30">
+                                  <div className="flex items-center gap-3">
+                                     <span className="w-1.5 h-1.5 bg-primary-500"></span>
+                                     <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">{sermon.title || 'Untitled Message'}</h4>
+                                  </div>
+                                  <RepeaterControls 
+                                      index={index} 
+                                      total={content.sermons.length}
+                                      onMoveUp={() => patchContent(d => { d.sermons = moveArrayItem(d.sermons, index, index - 1) })}
+                                      onMoveDown={() => patchContent(d => { d.sermons = moveArrayItem(d.sermons, index, index + 1) })}
+                                      onRemove={() => patchContent(d => { d.sermons = removeArrayItem(d.sermons, index) })}
+                                   />
+                               </div>
+                               <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                     <AdminField label="Message Title" onChange={v => patchContent(d => { d.sermons[index].title = v; if(!d.sermons[index].slug) d.sermons[index].slug = slugify(v) })} value={sermon.title} />
+                                     <AdminField label="URL Slug" onChange={v => patchContent(d => { d.sermons[index].slug = slugify(v) })} value={sermon.slug} />
+                                     <AdminField label="Speaker" onChange={v => patchContent(d => { d.sermons[index].speaker = v })} value={sermon.speaker} />
+                                     <AdminField label="Series Name" onChange={v => patchContent(d => { d.sermons[index].series = v })} value={sermon.series} />
+                                     <AdminField label="Published Date" onChange={v => patchContent(d => { d.sermons[index].date = v })} type="date" value={sermon.date} />
+                                     <AdminField label="Scripture Ref" onChange={v => patchContent(d => { d.sermons[index].scripture = v })} value={sermon.scripture} />
+                                  </div>
+                                  <div className="space-y-4">
+                                     <AdminField label="Watch URL (YouTube)" onChange={v => patchContent(d => { d.sermons[index].watchUrl = v })} value={sermon.watchUrl} />
+                                     <AdminField label="Embed URL" onChange={v => patchContent(d => { d.sermons[index].embedUrl = v })} value={sermon.embedUrl ?? ''} />
+                                     <AdminField label="PDF Notes URL" onChange={v => patchContent(d => { d.sermons[index].notesUrl = v })} value={sermon.notesUrl ?? ''} />
+                                  </div>
+                                  <div className="md:col-span-3">
+                                     <AdminTextarea label="Executive Summary / Blurb" onChange={v => patchContent(d => { d.sermons[index].summary = v })} rows={3} value={sermon.summary} />
+                                  </div>
+                               </div>
+                           </div>
+                        ))}
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </AdminSection>
-            </>
-          ) : null}
-        </main>
-      </div>
+                   </AdminSection>
+                </motion.div>
+             )}
+
+             {activeTab === 'events' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="events">
+                    <AdminSection 
+                      title="Event Calendar" 
+                      description="Manage conferences, outreach, and local church gatherings."
+                      actions={
+                        <button onClick={() => patchContent(d => { d.events.push({ slug: '', title: '', category: 'Conference', start: '', end: '', location: '', summary: '', details: [''], actionLabel: 'Register', actionUrl: '', contactEmail: '' }) })} className="px-6 py-2.5 bg-primary-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-primary-600 transition-colors rounded-sm shadow-lg shadow-primary-500/10">Create Event</button>
+                      }
+                    >
+                      <div className="flex flex-col gap-6">
+                        {content.events.map((event, index) => (
+                           <div key={index} className="flex flex-col group bg-stone-50 border border-stone-100 relative">
+                               <div className="flex items-center justify-between px-8 py-4 border-b border-stone-100 bg-stone-100/30">
+                                  <div className="flex items-center gap-3">
+                                     <span className="px-2 py-0.5 bg-stone-900 text-white text-[8px] font-bold uppercase tracking-widest">{event.category}</span>
+                                     <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">{event.title || 'Untitled Event'}</h4>
+                                  </div>
+                                  <RepeaterControls 
+                                      index={index} 
+                                      total={content.events.length}
+                                      onMoveUp={() => patchContent(d => { d.events = moveArrayItem(d.events, index, index - 1) })}
+                                      onMoveDown={() => patchContent(d => { d.events = moveArrayItem(d.events, index, index + 1) })}
+                                      onRemove={() => patchContent(d => { d.events = removeArrayItem(d.events, index) })}
+                                   />
+                               </div>
+                               <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                     <AdminField label="Event Title" onChange={v => patchContent(d => { d.events[index].title = v; if(!d.events[index].slug) d.events[index].slug = slugify(v) })} value={event.title} />
+                                     <AdminSelectField label="Category" onChange={v => patchContent(d => { d.events[index].category = v as Exclude<EventCategory, 'All'> })} options={['Conference', 'Kids', 'Men', 'Women', 'Youth', 'Outreach']} value={event.category} />
+                                     <AdminField label="Start Time (ISO)" onChange={v => patchContent(d => { d.events[index].start = v })} type="datetime-local" value={event.start} />
+                                     <AdminField label="End Time (ISO)" onChange={v => patchContent(d => { d.events[index].end = v })} type="datetime-local" value={event.end ?? ''} />
+                                     <AdminField label="Location" onChange={v => patchContent(d => { d.events[index].location = v })} value={event.location} />
+                                     <AdminField label="Action URL" onChange={v => patchContent(d => { d.events[index].actionUrl = v })} value={event.actionUrl} />
+                                     <AdminField label="Action Label" onChange={v => patchContent(d => { d.events[index].actionLabel = v })} value={event.actionLabel} />
+                                     <AdminField label="Contact Email" onChange={v => patchContent(d => { d.events[index].contactEmail = v })} value={event.contactEmail} />
+                                  </div>
+                                  <div className="md:col-span-3 grid grid-cols-1 gap-8 pt-4">
+                                     <AdminTextarea label="Short Summary" onChange={v => patchContent(d => { d.events[index].summary = v })} rows={2} value={event.summary} />
+                                     <StringListEditor addLabel="Add detail line" items={event.details} label="Event Details / Features" onChange={v => patchContent(d => { d.events[index].details = v })} />
+                                  </div>
+                               </div>
+                           </div>
+                        ))}
+                      </div>
+                    </AdminSection>
+                </motion.div>
+             )}
+
+             {activeTab === 'ministries' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="ministries">
+                    <AdminSection 
+                      title="Ministry Directory" 
+                      description="Edit active ministries, leaders, and meeting rhythms."
+                      actions={
+                        <button onClick={() => patchContent(d => { d.ministries.push({ slug: '', name: '', audience: '', summary: '', description: '', meetingTime: '', leader: '', email: '', rhythm: [''], opportunities: [''] }) })} className="px-6 py-2.5 bg-primary-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-primary-600 transition-colors rounded-sm shadow-lg shadow-primary-500/10">Add Ministry</button>
+                      }
+                    >
+                      <div className="flex flex-col gap-8">
+                        {content.ministries.map((min, index) => (
+                           <div key={index} className="flex flex-col group bg-stone-50 border border-stone-100 relative">
+                               <div className="flex items-center justify-between px-8 py-4 border-b border-stone-100 bg-stone-100/30">
+                                  <div className="flex items-center gap-3">
+                                     <span className="w-1.5 h-1.5 bg-[#0b162c]"></span>
+                                     <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">{min.name || 'New Ministry'}</h4>
+                                  </div>
+                                  <RepeaterControls 
+                                      index={index} 
+                                      total={content.ministries.length}
+                                      onMoveUp={() => patchContent(d => { d.ministries = moveArrayItem(d.ministries, index, index - 1) })}
+                                      onMoveDown={() => patchContent(d => { d.ministries = moveArrayItem(d.ministries, index, index + 1) })}
+                                      onRemove={() => patchContent(d => { d.ministries = removeArrayItem(d.ministries, index) })}
+                                   />
+                               </div>
+                               <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                  <AdminField label="Ministry Name" onChange={v => patchContent(d => { d.ministries[index].name = v; if(!d.ministries[index].slug) d.ministries[index].slug = slugify(v) })} value={min.name} />
+                                  <AdminField label="Audience/Scope" onChange={v => patchContent(d => { d.ministries[index].audience = v })} value={min.audience} />
+                                  <AdminField label="Leader Name" onChange={v => patchContent(d => { d.ministries[index].leader = v })} value={min.leader} />
+                                  <AdminField label="Leader Email" onChange={v => patchContent(d => { d.ministries[index].email = v })} value={min.email} />
+                                  <AdminField label="Meeting Schedule" onChange={v => patchContent(d => { d.ministries[index].meetingTime = v })} value={min.meetingTime} />
+                                  <AdminField label="URL Slug" onChange={v => patchContent(d => { d.ministries[index].slug = slugify(v) })} value={min.slug} />
+                                  <div className="md:col-span-2">
+                                     <AdminTextarea label="Core Summary" onChange={v => patchContent(d => { d.ministries[index].summary = v })} rows={2} value={min.summary} />
+                                     <div className="mt-8"/>
+                                     <AdminTextarea label="Deep Description" onChange={v => patchContent(d => { d.ministries[index].description = v })} rows={5} value={min.description} />
+                                  </div>
+                                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 border-t border-stone-200 pt-8">
+                                     <StringListEditor addLabel="Add activity" items={min.rhythm} label="Ministry Rhythm" onChange={v => patchContent(d => { d.ministries[index].rhythm = v })} />
+                                     <StringListEditor addLabel="Add role" items={min.opportunities} label="Serving Needs" onChange={v => patchContent(d => { d.ministries[index].opportunities = v })} />
+                                  </div>
+                               </div>
+                           </div>
+                        ))}
+                      </div>
+                    </AdminSection>
+                </motion.div>
+             )}
+
+             {activeTab === 'giving' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="giving">
+                    <AdminSection title="Giving & Financial flow" description="Control giving endpoints and trust messaging.">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="space-y-8">
+                             <AdminField label="Giving Portal (Global Link)" onChange={v => patchContent(d => { d.site.givingPortalUrl = v })} value={content.site.givingPortalUrl} />
+                             <StringListEditor addLabel="Add trust pillar" items={content.site.trustSignals} label="Financial Trust Signals" onChange={v => patchContent(d => { d.site.trustSignals = v })} />
+                          </div>
+                          <div className="p-8 bg-stone-900 text-white flex flex-col items-center justify-center text-center">
+                             <div className="w-12 h-12 bg-primary-500 rounded-full mb-6 flex items-center justify-center">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                             </div>
+                             <h4 className="font-display text-xl font-bold mb-2">Giving Strategy</h4>
+                             <p className="text-white/40 text-[10px] leading-relaxed italic">Changes here update the 'Give Online' buttons across the entire platform instantly.</p>
+                          </div>
+                       </div>
+                    </AdminSection>
+
+                    <AdminSection title="Page Metadata Overview" description="Manage SEO titles and descriptions for navigation routes.">
+                        <div className="grid grid-cols-1 gap-6">
+                           {content.pageSummaries.map((page, index) => (
+                             <div key={page.path} className="p-8 border border-stone-100 bg-white">
+                                <div className="flex items-baseline gap-4 mb-6 italic">
+                                   <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest leading-none">Route</span>
+                                   <span className="text-stone-900 font-bold text-sm leading-none">{page.path}</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                   <AdminField label="Meta Title" onChange={v => patchContent(d => { d.pageSummaries[index].title = v })} value={page.title} />
+                                   <AdminTextarea label="Meta Description" onChange={v => patchContent(d => { d.pageSummaries[index].description = v })} rows={2} value={page.description} />
+                                </div>
+                             </div>
+                           ))}
+                        </div>
+                    </AdminSection>
+                </motion.div>
+             )}
+          </AnimatePresence>
+        </div>
+
+        <footer className="p-10 border-t border-stone-200 mt-24 text-center">
+           <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest italic">
+              Seattle International Church Management System • Powered by Bravos Hub
+           </p>
+        </footer>
+      </main>
     </div>
   )
 }

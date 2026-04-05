@@ -1,235 +1,227 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
 
 import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
-import { formatDateTimeRange, normalizeSearchValue } from '../lib/formatters'
+import { formatShortDate, normalizeSearchValue } from '../lib/formatters'
 import type { EventCategory } from '../types'
 
 const eventCategories: EventCategory[] = [
   'All',
-  'Youth',
-  'Women',
-  'Men',
-  'Kids',
   'Conference',
+  'Kids',
+  'Men',
+  'Women',
+  'Youth',
   'Outreach',
 ]
 
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+}
 
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+}
 
 export function EventsPage() {
   const siteContent = useSiteContent()
   useDocumentMeta(
     'Events',
-    'Browse upcoming church events by category, view event details, and find the right next step for registration or contact.',
+    'Explore upcoming gatherings, conferences, and community events at Seattle International Church.',
   )
 
-  const [category, setCategory] = useState<EventCategory>('All')
   const [query, setQuery] = useState('')
+  const [activeCategory, setActiveCategory] = useState<EventCategory>('All')
   const deferredQuery = useDeferredValue(query)
 
   const filteredEvents = useMemo(() => {
     const normalizedQuery = normalizeSearchValue(deferredQuery)
 
     return siteContent.events.filter((event) => {
-      const matchesCategory = category === 'All' || event.category === category
+      const matchesCategory = activeCategory === 'All' || event.category === activeCategory
       const matchesQuery =
         !normalizedQuery ||
-        `${event.title} ${event.summary} ${event.location} ${event.category}`
-          .toLowerCase()
-          .includes(normalizedQuery)
+        `${event.title} ${event.summary} ${event.location}`.toLowerCase().includes(normalizedQuery)
 
       return matchesCategory && matchesQuery
     })
-  }, [category, deferredQuery, siteContent.events])
+  }, [activeCategory, deferredQuery, siteContent.events])
 
-  const spotlightEvent = filteredEvents[0] ?? siteContent.events[0]
+  const nextEvent = filteredEvents[0] || siteContent.events[0]
 
   return (
-    <div className="flex flex-col gap-12 sm:gap-20 pb-20">
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full bg-primary-50 rounded-[3rem] p-10 md:p-20 relative overflow-hidden flex flex-col items-center text-center mt-2 border border-primary-100"
-      >
-        <div className="absolute top-[-100px] right-[-100px] w-96 h-96 bg-primary-200/40 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-stone-300/30 rounded-full blur-[80px]" />
+    <div className="flex flex-col bg-white">
+      {/* Cinematic Hero */}
+      <section className="relative w-full pt-48 pb-32 flex flex-col justify-center bg-stone-900 text-white isolate overflow-hidden">
+        <img 
+          src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2600&auto=format&fit=crop" 
+          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" 
+          alt="People gathering" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent pointer-events-none" />
         
-        <p className="text-primary-600 font-bold uppercase tracking-widest text-sm mb-4 relative z-10">Events</p>
-        <h1 className="font-display text-5xl md:text-6xl font-bold text-stone-900 leading-tight mb-6 max-w-3xl relative z-10">
-          Stay close to the current life of the church
-        </h1>
-        <p className="text-xl text-stone-600 max-w-2xl font-medium relative z-10">
-          Upcoming gatherings, ministry moments, and outreach rhythms should always
-          be easy to find and easy to act on.
-        </p>
-      </motion.section>
+        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-16">
+          <motion.div 
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer}
+            className="max-w-3xl"
+          >
+            <motion.p variants={fadeInUp} className="text-primary-500 font-bold uppercase tracking-[0.2em] text-xs mb-4">
+              Gatherings
+            </motion.p>
+            <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[1.1] mb-6">
+               Life happens in community.
+            </motion.h1>
+            <motion.p variants={fadeInUp} className="text-xl text-stone-300 font-medium max-w-2xl leading-relaxed">
+               Explore upcoming gatherings, conferences, and community events designed to help us grow together.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Spotlight */}
-        <motion.section 
-           initial={{ opacity: 0, x: -30 }}
-           animate={{ opacity: 1, x: 0 }}
-           transition={{ delay: 0.2, duration: 0.8 }}
-           className="lg:col-span-8 flex flex-col"
-        >
-          <article className="bg-stone-900 text-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl flex flex-col h-full relative overflow-hidden group border border-stone-800">
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-              <img src="https://images.unsplash.com/photo-1543807535-eceef0bc6599?q=80&w=1200&auto=format&fit=crop" alt="gathering" className="w-full h-full object-cover opacity-[0.15] mix-blend-overlay group-hover:scale-105 transition-transform duration-1000" />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/80 to-transparent" />
+      {/* Spotlight Event Spotlight */}
+      <section className="max-w-[1400px] mx-auto w-full px-6 -mt-16 relative z-20">
+         <motion.div 
+           initial={{ opacity: 0, y: 30 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.3, duration: 0.8 }}
+           className="bg-white shadow-2xl shadow-stone-900/10 flex flex-col lg:flex-row overflow-hidden border border-stone-100 min-h-[450px]"
+         >
+            <div className="w-full lg:w-1/2 aspect-video lg:aspect-auto bg-stone-100 relative">
+               <img src={`https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1200&auto=format&fit=crop`} className="absolute inset-0 w-full h-full object-cover grayscale-[20%]" alt="Event" />
+               <div className="absolute top-8 left-8 flex flex-col items-center justify-center bg-white p-4 shadow-xl border border-stone-100 border-t-4 border-t-primary-500">
+                  <span className="font-display font-extrabold text-2xl text-stone-900 leading-none">{new Date(nextEvent.start).getDate()}</span>
+                  <span className="font-bold text-[10px] text-stone-400 uppercase tracking-widest leading-none mt-1">{new Date(nextEvent.start).toLocaleString('default', { month: 'short' })}</span>
+               </div>
+            </div>
+            <div className="w-full lg:w-1/2 p-10 md:p-14 flex flex-col justify-center items-start gap-6">
+                <p className="text-primary-500 font-bold uppercase tracking-widest text-xs">Featured Event</p>
+                <h2 className="font-display text-4xl font-bold text-stone-900">{nextEvent.title}</h2>
+                <div className="flex flex-col gap-2">
+                   <p className="text-stone-500 font-medium flex items-center gap-4">
+                      <span className="flex items-center gap-1.5"><svg className="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> {new Date(nextEvent.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="flex items-center gap-1.5"><svg className="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> {nextEvent.location}</span>
+                   </p>
+                </div>
+                <p className="text-stone-600 leading-relaxed text-sm md:text-base italic">
+                   "{nextEvent.summary}"
+                </p>
+                <div className="pt-4">
+                  <Link to={`/events/${nextEvent.slug}`} className="px-8 py-3 bg-[#f97316] text-white font-medium text-sm hover:bg-[#ea580c] transition-colors shadow-lg shadow-primary-500/10">
+                    Learn more and RSVP →
+                  </Link>
+                </div>
+            </div>
+         </motion.div>
+      </section>
+
+      {/* Event Filters & Grid */}
+      <section className="py-24 px-6 md:px-16 max-w-[1400px] mx-auto w-full">
+         <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16 border-b border-stone-100 pb-12">
+            <div>
+               <p className="text-stone-400 font-bold uppercase tracking-[0.2em] text-xs mb-4">Calendar</p>
+               <h2 className="font-display text-4xl font-bold text-stone-900">Upcoming gatherings</h2>
             </div>
             
-            <div className="relative z-10 flex-1 flex flex-col">
-              <p className="text-primary-400 font-bold uppercase tracking-widest text-sm mb-4">Upcoming Spotlight</p>
-              <h2 className="font-display text-4xl font-bold mb-4">{spotlightEvent.title}</h2>
-              <p className="text-stone-300 text-lg mb-8 leading-relaxed max-w-2xl">{spotlightEvent.summary}</p>
-              
-              <div className="flex flex-wrap gap-4 text-sm font-medium mb-10 text-stone-400 mt-auto">
-                <span className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-md">
-                   <svg className="w-4 h-4 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                   {formatDateTimeRange(spotlightEvent.start, spotlightEvent.end)}
-                </span>
-                <span className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-md">
-                  <svg className="w-4 h-4 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  {spotlightEvent.location}
-                </span>
-                <span className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-md text-white">
-                  {spotlightEvent.category}
-                </span>
-              </div>
-              
-              <Link className="self-start px-8 py-4 rounded-full bg-white text-stone-900 font-bold hover:bg-stone-100 transition-colors" to={`/events/${spotlightEvent.slug}`}>
-                View event details
-              </Link>
-            </div>
-          </article>
-        </motion.section>
-
-        {/* Filter */}
-        <motion.section 
-           initial={{ opacity: 0, x: 30 }}
-           animate={{ opacity: 1, x: 0 }}
-           transition={{ delay: 0.3, duration: 0.8 }}
-           className="lg:col-span-4 flex flex-col"
-        >
-          <article className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full flex flex-col">
-            <p className="text-stone-400 font-bold uppercase tracking-widest text-sm mb-2">Filter events</p>
-            <h2 className="font-display text-2xl font-bold text-stone-900 mb-8">Search by type or title</h2>
-
-            <div className="flex flex-col gap-6 flex-1">
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-stone-700">Search keyword</span>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-4 flex items-center text-stone-400">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  </span>
-                  <input
-                    className="w-full bg-stone-50 border border-stone-200 focus:bg-white focus:border-stone-300 focus:ring-2 focus:ring-stone-200 text-stone-800 rounded-xl pl-11 pr-4 py-3 outline-none transition-all placeholder:text-stone-400"
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="E.g. breakfast, youth..."
-                    value={query}
-                  />
-                </div>
-              </label>
-
-              <div className="flex flex-col gap-3">
-                <span className="text-sm font-bold text-stone-700">Category</span>
-                <div className="flex flex-wrap gap-2">
-                  {eventCategories.map((item) => (
-                    <button
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                        category === item 
-                          ? 'bg-stone-900 text-white shadow-md' 
-                          : 'bg-stone-50 text-stone-600 border border-stone-200 hover:bg-stone-100'
-                      }`}
-                      key={item}
-                      onClick={() => setCategory(item)}
-                      type="button"
+            <div className="flex flex-col gap-6 w-full md:w-auto items-center md:items-end">
+               <div className="flex flex-wrap gap-2 justify-center">
+                  {eventCategories.map((cat) => (
+                    <button 
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-all rounded-sm border ${activeCategory === cat ? 'bg-stone-900 text-white border-stone-900' : 'bg-transparent text-stone-400 border-stone-200 hover:border-stone-400'}`}
                     >
-                      {item}
+                      {cat}
                     </button>
                   ))}
-                </div>
-              </div>
+               </div>
+               
+               <div className="relative w-full max-w-xs">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-stone-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  </span>
+                  <input
+                    className="w-full bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 text-sm rounded-sm pl-11 pr-4 py-2.5 outline-none transition-all placeholder:text-stone-400 italic"
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search event name..."
+                    value={query}
+                  />
+               </div>
             </div>
-          </article>
-        </motion.section>
-      </div>
+         </div>
 
-      <motion.section 
-        initial="hidden"
-        animate="show"
-        className="w-full"
-      >
-        <div className="flex items-center justify-between mb-8 border-b border-stone-200 pb-4">
-           <h3 className="font-display text-2xl font-bold text-stone-900">All Events</h3>
-           <p className="text-sm font-medium text-stone-500">{filteredEvents.length} result{filteredEvents.length !== 1 ? 's' : ''}</p>
-        </div>
-
-        {filteredEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+         {/* Events Grid */}
+         <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8"
+         >
             <AnimatePresence mode="popLayout">
               {filteredEvents.map((event) => (
                 <motion.article 
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all flex flex-col group" 
-                  key={event.slug}
+                  transition={{ duration: 0.3 }}
+                  key={event.slug} 
+                  className="flex flex-col group cursor-pointer w-full bg-white border border-stone-100 hover:border-stone-200 shadow-sm hover:shadow-xl hover:shadow-stone-900/5 hover:-translate-y-1 p-6 transition-all"
                 >
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary-500 mb-3">{event.category}</p>
-                  <h3 className="font-display text-xl font-bold text-stone-900 mb-3 group-hover:text-primary-600 transition-colors">{event.title}</h3>
-                  <p className="text-stone-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-3">{event.summary}</p>
-                  
-                  <div className="flex flex-col gap-2 text-xs font-medium text-stone-500 bg-stone-50 rounded-2xl p-4 border border-stone-100 mb-6">
-                    <span className="flex items-center gap-2">
-                       <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                       {formatDateTimeRange(event.start, event.end)}
-                    </span>
-                    <span className="flex items-center gap-2">
-                       <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                       {event.location}
-                    </span>
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <Link className="flex-1 text-center py-3 rounded-full bg-stone-900 text-white text-sm font-bold hover:bg-stone-800 transition-colors" to={`/events/${event.slug}`}>
-                      Details
-                    </Link>
-                    <a
-                      className="flex-1 text-center py-3 rounded-full bg-white border border-stone-200 text-stone-700 text-sm font-bold hover:bg-stone-50 transition-colors"
-                      href={event.actionUrl}
-                      rel="noreferrer"
-                      target={event.actionUrl.startsWith('/') ? undefined : '_blank'}
-                    >
-                      {event.actionLabel}
-                    </a>
-                  </div>
+                    <div className="flex justify-between items-start mb-6">
+                       <p className="text-primary-500 text-[10px] font-bold tracking-widest uppercase py-1 px-2 bg-primary-50">
+                          {event.category}
+                       </p>
+                       <div className="text-right">
+                          <p className="font-display font-bold text-stone-900 text-lg leading-none">{formatShortDate(event.start)}</p>
+                          <p className="text-stone-400 text-[10px] uppercase font-bold mt-1 tracking-wider">{new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                       </div>
+                    </div>
+                    
+                    <h3 className="font-display text-xl font-bold text-stone-900 mb-4 group-hover:text-primary-500 transition-colors">{event.title}</h3>
+                    <p className="text-stone-500 text-sm leading-relaxed mb-6 line-clamp-3 italic">"{event.summary}"</p>
+                    
+                    <div className="mt-auto flex flex-col gap-3">
+                       <div className="flex items-center gap-2 text-stone-400 text-xs font-medium">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          <span>{event.location}</span>
+                       </div>
+                       <Link to={`/events/${event.slug}`} className="text-stone-900 text-xs font-bold uppercase tracking-widest group-hover:text-primary-500 transition-colors flex items-center gap-1.5 pt-4 border-t border-stone-50">
+                          View details <span>→</span>
+                       </Link>
+                    </div>
                 </motion.article>
               ))}
             </AnimatePresence>
-          </div>
-        ) : (
-          <motion.article 
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             className="bg-stone-50 border border-stone-200 border-dashed rounded-3xl p-12 text-center flex flex-col items-center max-w-2xl mx-auto"
-          >
-            <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-stone-100 flex items-center justify-center mb-6">
-              <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+         </motion.div>
+
+         {filteredEvents.length === 0 && (
+            <div className="py-32 flex flex-col items-center text-center">
+               <div className="w-16 h-16 bg-stone-50 border border-stone-100 text-stone-200 flex items-center justify-center mb-6">
+                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+               </div>
+               <h3 className="font-display text-2xl font-bold text-stone-900 mb-2">No events found</h3>
+               <p className="text-stone-400 italic text-sm">There are currently no events matching your criteria.</p>
             </div>
-            <h3 className="font-display text-2xl font-bold text-stone-900 mb-2">No events match that filter right now</h3>
-            <p className="text-stone-500">Try another category or search phrase to see more upcoming gatherings.</p>
-            <button onClick={() => { setQuery(''); setCategory('All'); }} className="mt-6 font-bold text-stone-900 underline underline-offset-4 hover:text-primary-600 transition-colors">Clear all filters</button>
-          </motion.article>
-        )}
-      </motion.section>
+         )}
+      </section>
+
+      {/* Community CTA */}
+      <section className="py-24 bg-[#0b162c] text-white relative isolate overflow-hidden">
+        <div className="absolute top-[-50%] left-[-20%] w-[800px] h-[800px] bg-primary-500/10 rounded-full blur-[150px] pointer-events-none" />
+        <div className="max-w-[1400px] mx-auto px-6 md:px-16 text-center flex flex-col items-center">
+            <p className="text-primary-500 font-bold uppercase tracking-[0.2em] text-[10px] mb-6">Get Connected</p>
+            <h2 className="font-display text-3xl md:text-5xl font-bold max-w-2xl leading-tight mb-8">
+               Looking for a place to belong? Join a ministry that fits your season of life.
+            </h2>
+            <Link to="/ministries" className="px-10 py-4 bg-[#f97316] text-white font-bold text-sm tracking-widest hover:bg-[#ea580c] transition-colors shadow-2xl shadow-primary-500/20 uppercase">
+               Explore Ministries
+            </Link>
+        </div>
+      </section>
     </div>
   )
 }
