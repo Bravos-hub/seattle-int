@@ -5,9 +5,14 @@ import { useSiteContent } from '../content/siteContentStore'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { formatDate, normalizeSearchValue } from '../lib/formatters'
 
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+}
+
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 }
 
 export function SermonsPage() {
@@ -44,197 +49,198 @@ export function SermonsPage() {
   const featuredSermon = filteredSermons[0] ?? siteContent.sermons[0]
 
   return (
-    <div className="flex flex-col gap-12 sm:gap-20 pb-20">
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full bg-stone-900 text-white rounded-[3rem] p-10 md:p-20 relative overflow-hidden flex flex-col items-center text-center mt-2 shadow-xl shadow-stone-900/10"
-      >
-        <div className="absolute top-[-100px] left-[-100px] w-96 h-96 bg-primary-500/20 rounded-full blur-[100px]" />
+    <div className="flex flex-col bg-white">
+      {/* Cinematic Hero */}
+      <section className="relative w-full pt-48 pb-32 flex flex-col justify-center bg-stone-900 text-white isolate overflow-hidden">
+        <img 
+          src="https://images.unsplash.com/photo-1543807535-eceef0bc6599?q=80&w=2600&auto=format&fit=crop" 
+          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" 
+          alt="Worship scene" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent pointer-events-none" />
         
-        <p className="text-primary-400 font-bold uppercase tracking-widest text-sm mb-4 relative z-10">Sermons</p>
-        <h1 className="font-display text-5xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl relative z-10">
-          Teaching that stays accessible and easy to revisit
-        </h1>
-        <p className="text-xl text-stone-300 max-w-2xl font-medium relative z-10">
-          Search the archive, filter by speaker, and keep recent messages close at
-          hand throughout the week.
-        </p>
-      </motion.section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Featured Message */}
-        <motion.section 
-           initial={{ opacity: 0, x: -30 }}
-           animate={{ opacity: 1, x: 0 }}
-           transition={{ delay: 0.2, duration: 0.8 }}
-           className="lg:col-span-8 flex flex-col"
-        >
-          <article className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full">
-            <p className="text-primary-500 font-bold uppercase tracking-widest text-sm mb-4">Featured Message</p>
-            <h2 className="font-display text-4xl mb-2 font-bold text-stone-900">{featuredSermon.title}</h2>
-            <p className="text-stone-500 font-medium mb-8 flex items-center gap-2 flex-wrap">
-              <strong className="text-stone-800">{featuredSermon.speaker}</strong> • {featuredSermon.series} • {formatDate(featuredSermon.date)}
-            </p>
-
-            <div className="flex-1 w-full rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 mb-8 relative aspect-video md:aspect-auto min-h-[300px]">
-              {featuredSermon.embedUrl ? (
-                <iframe
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  src={featuredSermon.embedUrl}
-                  title={featuredSermon.title}
-                />
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                  <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  </div>
-                  <strong className="text-stone-800 font-medium">Embed ready for upload</strong>
-                  <p className="text-sm text-stone-500">Add a sermon embed URL in the content layer to show the player here.</p>
-                </div>
-              )}
-            </div>
-
-            <p className="text-stone-600 leading-relaxed mb-8 text-lg">{featuredSermon.summary}</p>
-            <div className="flex flex-wrap gap-4 mt-auto">
-              <a className="px-8 py-4 rounded-full bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors" href={featuredSermon.watchUrl} rel="noreferrer" target="_blank">
-                Watch online
-              </a>
-              {featuredSermon.notesUrl ? (
-                <a className="px-8 py-4 rounded-full bg-stone-100 text-stone-900 border border-stone-200 font-bold hover:bg-stone-200 transition-colors" href={featuredSermon.notesUrl} rel="noreferrer" target="_blank">
-                  Scripture notes
-                </a>
-              ) : null}
-            </div>
-          </article>
-        </motion.section>
-
-        {/* Filter */}
-        <motion.section 
-           initial={{ opacity: 0, x: 30 }}
-           animate={{ opacity: 1, x: 0 }}
-           transition={{ delay: 0.3, duration: 0.8 }}
-           className="lg:col-span-4 flex flex-col"
-        >
-          <article className="bg-primary-50 rounded-[2.5rem] p-8 md:p-10 border border-primary-100 flex flex-col h-full">
-            <p className="text-primary-600 font-bold uppercase tracking-widest text-sm mb-2">Filter archive</p>
-            <h2 className="font-display text-2xl font-bold text-stone-900 mb-8">Find a message quickly</h2>
-
-            <div className="flex flex-col gap-6 flex-1">
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-stone-700">Search title, series, or scripture</span>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-4 flex items-center text-stone-400">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  </span>
-                  <input
-                    className="w-full bg-white border border-stone-200 focus:bg-white focus:border-stone-300 focus:ring-2 focus:ring-stone-200 text-stone-800 rounded-xl pl-11 pr-4 py-3 outline-none transition-all placeholder:text-stone-400"
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Example: hope, Matthew..."
-                    value={query}
-                  />
-                </div>
-              </label>
-              
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-stone-700">Speaker</span>
-                <div className="relative">
-                  <select 
-                    className="w-full bg-white border border-stone-200 focus:border-stone-300 focus:ring-2 focus:ring-stone-200 text-stone-800 rounded-xl px-4 py-3 outline-none transition-all appearance-none cursor-pointer"
-                    onChange={(event) => setSpeaker(event.target.value)} 
-                    value={speaker}
-                  >
-                    {speakers.map((item) => (
-                      <option key={item} value={item}>{item}</option>
-                    ))}
-                  </select>
-                  <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
-                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </span>
-                </div>
-              </label>
-            </div>
-
-            <div className="mt-8 pt-8 border-t border-primary-200 flex flex-col gap-4 text-sm font-medium text-stone-600">
-              <span className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary-500"></div>
-                {filteredSermons.length} sermons match your filters
-              </span>
-              <span className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-stone-400"></div>
-                Latest sermon featured at top
-              </span>
-            </div>
-          </article>
-        </motion.section>
-      </div>
-
-      <motion.section 
-        variants={staggerContainer}
-        initial="hidden"
-        animate="show"
-        className="w-full"
-      >
-        <div className="flex items-center justify-between mb-8 border-b border-stone-200 pb-4">
-           <h3 className="font-display text-2xl font-bold text-stone-900">Archive Insights</h3>
+        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-16">
+          <motion.div 
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer}
+            className="max-w-3xl"
+          >
+            <motion.p variants={fadeInUp} className="text-primary-500 font-bold uppercase tracking-[0.2em] text-xs mb-4">
+              Teachings
+            </motion.p>
+            <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[1.1] mb-6">
+              Messages that matter for everyday life
+            </motion.h1>
+            <motion.p variants={fadeInUp} className="text-xl text-stone-300 font-medium max-w-2xl leading-relaxed">
+               Search the archive, filter by speaker, and keep recent messages close at
+               hand throughout the week.
+            </motion.p>
+          </motion.div>
         </div>
+      </section>
 
-        {filteredSermons.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      {/* Featured Sermon Card */}
+      <section className="max-w-[1200px] mx-auto w-full px-6 -mt-16 relative z-20">
+         <motion.div 
+           initial={{ opacity: 0, y: 30 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.3, duration: 0.8 }}
+           className="bg-white shadow-2xl shadow-stone-900/10 flex flex-col lg:flex-row overflow-hidden border border-stone-100 min-h-[500px]"
+         >
+            <div className="w-full lg:w-1/2 aspect-video lg:aspect-auto bg-stone-100 relative">
+               {featuredSermon.embedUrl ? (
+                 <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={featuredSermon.embedUrl}
+                    title={featuredSermon.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                 />
+               ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-stone-50">
+                  <svg className="w-12 h-12 text-stone-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-stone-400 text-sm font-medium italic">Message ready for upload</p>
+                </div>
+               )}
+            </div>
+            <div className="w-full lg:w-1/2 p-10 md:p-14 flex flex-col justify-center items-start gap-6">
+                <p className="text-primary-500 font-bold uppercase tracking-widest text-xs">Featured Message</p>
+                <h2 className="font-display text-4xl font-bold text-stone-900">{featuredSermon.title}</h2>
+                <div className="flex flex-col gap-2">
+                   <p className="text-stone-500 font-medium flex items-center gap-2">
+                      <strong className="text-stone-900">{featuredSermon.speaker}</strong> • {featuredSermon.series}
+                   </p>
+                   <p className="text-stone-400 text-sm italic">{formatDate(featuredSermon.date)} • {featuredSermon.scripture}</p>
+                </div>
+                <p className="text-stone-600 leading-relaxed text-sm md:text-base line-clamp-4 italic">
+                   "{featuredSermon.summary}"
+                </p>
+                <div className="flex gap-4 pt-4">
+                  <a href={featuredSermon.watchUrl} target="_blank" rel="noreferrer" className="px-8 py-3 bg-[#f97316] text-white font-medium text-sm hover:bg-[#ea580c] transition-colors">
+                    Watch online
+                  </a>
+                  {featuredSermon.notesUrl && (
+                    <a href={featuredSermon.notesUrl} target="_blank" rel="noreferrer" className="px-8 py-3 bg-stone-100 text-stone-900 font-medium text-sm hover:bg-stone-200 transition-colors">
+                      Notes
+                    </a>
+                  )}
+                </div>
+            </div>
+         </motion.div>
+      </section>
+
+      {/* Archive Header & Filters */}
+      <section className="py-24 px-6 md:px-16 max-w-[1400px] mx-auto w-full">
+         <div className="flex flex-col md:flex-row items-baseline justify-between gap-8 mb-12 border-b border-stone-100 pb-12">
+            <div className="max-w-md">
+               <p className="text-stone-400 font-bold uppercase tracking-[0.2em] text-xs mb-4">Archive</p>
+               <h2 className="font-display text-4xl font-bold text-stone-900 mb-4">Past Messages</h2>
+               <p className="text-stone-500 text-sm leading-relaxed italic">Explore our previous teaching series and standalone messages through the years.</p>
+            </div>
+            
+            <div className="flex flex-col gap-4 w-full md:w-auto">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="relative min-w-[240px]">
+                    <span className="absolute inset-y-0 left-4 flex items-center text-stone-400">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </span>
+                    <input
+                      className="w-full bg-stone-50 border border-stone-200 focus:bg-white focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 text-sm rounded-sm pl-11 pr-4 py-2.5 outline-none transition-all placeholder:text-stone-400 italic"
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search title, series, or scripture"
+                      value={query}
+                    />
+                  </div>
+                  <div className="relative">
+                    <select 
+                      className="w-full bg-stone-50 border border-stone-200 focus:bg-white focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 text-sm rounded-sm px-4 py-2.5 outline-none appearance-none cursor-pointer pr-10 italic text-stone-600"
+                      onChange={(event) => setSpeaker(event.target.value)} 
+                      value={speaker}
+                    >
+                      {speakers.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ) )}
+                    </select>
+                    <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-300">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </span>
+                  </div>
+               </div>
+               <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest text-right">
+                  Showing {filteredSermons.length} results
+               </p>
+            </div>
+         </div>
+
+         {/* Sermon Archive Grid */}
+         <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8"
+         >
             <AnimatePresence mode="popLayout">
-               {filteredSermons.map((sermon) => (
+              {filteredSermons.map((sermon, idx) => (
                 <motion.article 
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all flex flex-col group" 
-                  id={`sermon-${sermon.slug}`} 
-                  key={sermon.slug}
+                  transition={{ duration: 0.3 }}
+                  key={sermon.slug} 
+                  className="flex flex-col group cursor-pointer w-full"
                 >
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary-500 mb-2">{sermon.series}</p>
-                  <h3 className="font-display text-2xl font-bold text-stone-900 mb-3 group-hover:text-primary-600 transition-colors">{sermon.title}</h3>
-                  <p className="text-stone-600 leading-relaxed mb-6 flex-1 text-sm">{sermon.summary}</p>
-                  
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-stone-500 bg-stone-50 rounded-2xl p-4 border border-stone-100 mb-6 uppercase tracking-wider">
-                    <span className="flex items-center gap-1.5"><svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> {sermon.speaker}</span>
-                    <span className="flex items-center gap-1.5"><svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> {formatDate(sermon.date)}</span>
-                    <span className="flex items-center gap-1.5"><svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> {sermon.scripture}</span>
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <a className="flex-1 text-center py-3 rounded-full bg-stone-900 text-white font-bold text-sm hover:bg-stone-800 transition-colors" href={sermon.watchUrl} rel="noreferrer" target="_blank">
-                      Open sermon
+                    <div className="w-full aspect-[4/3] bg-stone-100 overflow-hidden mb-6 relative">
+                      <div className="absolute inset-0 bg-[#0b162c] opacity-0 group-hover:opacity-40 transition-opacity duration-500 z-10" />
+                      <img 
+                        src={`https://images.unsplash.com/photo-${1500000000000 + idx}?q=80&w=800&auto=format&fit=crop`} 
+                        alt="Sermon Thumbnail"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[20%] group-hover:grayscale-0" 
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1529070538774-1843cb1665e8?q=80&w=800&auto=format&fit=crop"
+                        }}
+                      />
+                    </div>
+                    <p className="text-[#f97316] text-[10px] font-bold tracking-widest uppercase mb-2">
+                       {sermon.series} | {sermon.speaker}
+                    </p>
+                    <h3 className="font-display text-xl font-bold text-stone-900 mb-2 group-hover:text-[#f97316] transition-colors">{sermon.title}</h3>
+                    <p className="text-stone-400 text-[11px] italic mb-6">Posted on {formatDate(sermon.date)} • {sermon.scripture}</p>
+                    <a href={sermon.watchUrl} target="_blank" rel="noreferrer" className="text-stone-900 text-xs font-bold uppercase tracking-wider group-hover:text-[#f97316] transition-colors flex items-center gap-2">
+                      Listen to the message <span className="text-[10px] group-hover:translate-x-1 transition-transform">→</span>
                     </a>
-                    {sermon.notesUrl ? (
-                      <a className="flex-1 text-center py-3 rounded-full bg-white border border-stone-200 text-stone-700 font-bold text-sm hover:bg-stone-50 transition-colors" href={sermon.notesUrl} rel="noreferrer" target="_blank">
-                        Notes
-                      </a>
-                    ) : null}
-                  </div>
                 </motion.article>
               ))}
             </AnimatePresence>
-          </div>
-        ) : (
-          <motion.article 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-stone-50 border border-stone-200 border-dashed rounded-3xl p-12 text-center flex flex-col items-center max-w-2xl mx-auto"
-          >
-            <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-stone-100 flex items-center justify-center mb-6">
-              <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+         </motion.div>
+
+         {filteredSermons.length === 0 && (
+            <div className="py-32 flex flex-col items-center text-center">
+               <div className="w-16 h-16 bg-stone-50 border border-stone-100 text-stone-200 flex items-center justify-center mb-6">
+                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+               </div>
+               <h3 className="font-display text-2xl font-bold text-stone-900 mb-2">No messages found</h3>
+               <p className="text-stone-400 italic text-sm">Try adjusting your filters or search query.</p>
+               <button 
+                 onClick={() => { setQuery(''); setSpeaker('All speakers'); }}
+                 className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-[#f97316] hover:text-[#ea580c] transition-colors"
+               >
+                  Clear all filters
+               </button>
             </div>
-            <h3 className="font-display text-2xl font-bold text-stone-900 mb-2">No sermons match that search yet</h3>
-            <p className="text-stone-500">Try a different speaker, series, or Scripture reference.</p>
-            <button onClick={() => { setQuery(''); setSpeaker('All speakers'); }} className="mt-6 font-bold text-stone-900 underline underline-offset-4 hover:text-primary-600 transition-colors">Clear all filters</button>
-          </motion.article>
-        )}
-      </motion.section>
+         )}
+      </section>
+
+      {/* Scripture CTA */}
+      <section className="py-24 bg-stone-950 text-white relative isolate overflow-hidden">
+        <div className="absolute inset-0 w-full h-full bg-[#f97316]/5 pointer-events-none" />
+        <div className="max-w-[1400px] mx-auto px-6 md:px-16 text-center flex flex-col items-center">
+            <p className="text-[#f97316] font-bold uppercase tracking-[0.2em] text-[10px] mb-6">Weekly Teaching</p>
+            <h2 className="font-display text-3xl md:text-5xl font-bold max-w-3xl leading-tight mb-8">
+               "For where two or three gather in my name, there am I with them."
+            </h2>
+            <p className="text-white/40 italic font-medium">— Matthew 18:20</p>
+        </div>
+      </section>
     </div>
   )
 }

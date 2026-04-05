@@ -14,6 +14,8 @@ export function Layout() {
   const [query, setQuery] = useState('')
   const navItems = siteContent.pageSummaries.filter((page) => page.title !== 'Home')
 
+  const isHome = location.pathname === '/'
+
   useEffect(() => {
     if (location.hash) {
       const targetId = location.hash.replace('#', '')
@@ -68,60 +70,30 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-stone-50 overflow-x-hidden text-stone-800">
+    <div className={`min-h-screen flex flex-col font-sans ${isHome ? 'bg-white' : 'bg-stone-50'} overflow-x-hidden text-stone-800`}>
       <a className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-stone-900 focus:text-white focus:z-50 focus:rounded-br-2xl" href="#main-content">
         Skip to content
       </a>
 
-      {/* Top Banner */}
-      <motion.div 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-stone-900 text-stone-300 text-sm py-2 px-4 md:px-8 flex flex-wrap justify-between items-center z-50 relative"
-      >
-        <p className="font-medium tracking-wide">
-          {siteContent.site.serviceTimes
-            .slice(0, 2)
-            .map((item) => `${item.label}: ${item.time}`)
-            .join(' • ')}
-        </p>
-        <a 
-          href={siteContent.site.watchOnlineUrl} 
-          rel="noreferrer" 
-          target="_blank"
-          className="hover:text-white transition-colors underline underline-offset-4"
-        >
-          Watch online
-        </a>
-      </motion.div>
-
-      {/* Floating Header */}
-      <div className="sticky top-4 z-40 mx-4 md:mx-8 mb-4">
+      {/* Edge-to-edge Header */}
+      <div className={`absolute top-0 w-full z-50 transition-colors duration-300 ${isHome ? 'bg-transparent' : 'bg-[#0b162c] border-b border-white/5'}`}>
         <motion.header 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-7xl mx-auto rounded-3xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-4 py-3 md:px-6 flex items-center justify-between"
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-[1400px] mx-auto px-6 py-6 md:py-8 flex items-center justify-between"
         >
-          <Link className="flex items-center gap-3 shrink-0" onClick={closeNavigation} to="/">
-            <div className="w-10 h-10 rounded-xl bg-primary-500 text-white flex items-center justify-center font-display font-bold text-lg tracking-wider shadow-sm">
-              SI
-            </div>
-            <div className="flex flex-col hidden sm:flex">
-              <span className="font-display font-bold text-stone-900 leading-tight">
-                {siteContent.site.shortName}
-              </span>
-              <span className="text-xs text-stone-500 font-medium">
-                {siteContent.site.tagline}
-              </span>
-            </div>
+          <Link className="flex items-center gap-2 shrink-0 group text-white" onClick={closeNavigation} to="/">
+            <svg className="w-6 h-6 text-[#f97316] group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span className="font-display font-bold text-lg tracking-widest uppercase">
+              {siteContent.site.shortName || 'CHURCH'}
+            </span>
           </Link>
 
           <button
             aria-controls="site-navigation"
             aria-expanded={menuOpen}
-            className="md:hidden p-2 text-stone-600 hover:text-stone-900 focus:outline-none"
+            className="xl:hidden p-2 text-white/70 hover:text-white focus:outline-none"
             onClick={() => setMenuOpen(!menuOpen)}
             type="button"
           >
@@ -130,12 +102,16 @@ export function Layout() {
             </svg>
           </button>
 
-          <div className={`${menuOpen ? 'flex' : 'hidden'} md:flex absolute md:relative top-full left-0 right-0 mt-4 md:mt-0 p-6 md:p-0 bg-white/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none rounded-3xl md:rounded-none shadow-xl md:shadow-none border border-stone-100 md:border-none flex-col md:flex-row items-center gap-6 flex-1 justify-end`}>
-            <nav className="flex flex-col md:flex-row items-center gap-1 w-full md:w-auto" id="site-navigation">
+          <div className={`${menuOpen ? 'flex' : 'hidden'} xl:flex absolute xl:relative top-full left-0 right-0 p-6 xl:p-0 bg-[#0b162c]/95 xl:bg-transparent backdrop-blur-xl xl:backdrop-blur-none border-b border-white/10 xl:border-none flex-col xl:flex-row items-center gap-8 flex-1 justify-end`}>
+            <nav className="flex flex-col xl:flex-row items-center gap-6 xl:gap-8 w-full xl:w-auto" id="site-navigation">
+              {/* Home */}
+              <NavLink className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-[#f97316]' : 'text-white/70 hover:text-white'}`} onClick={closeNavigation} to="/">Home</NavLink>
+              
+              {/* Iterating original nav logic but styling for dark mode */}
               {navItems.map((item) => (
                 <NavLink
                   className={({ isActive }) =>
-                    `px-4 py-2 rounded-full text-sm font-medium transition-all w-full md:w-auto text-center ${isActive ? 'bg-stone-100 text-stone-900' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'}`
+                    `text-sm font-medium transition-colors w-full xl:w-auto text-center ${isActive ? 'text-[#f97316]' : 'text-white/70 hover:text-white'}`
                   }
                   key={item.path}
                   onClick={closeNavigation}
@@ -146,11 +122,11 @@ export function Layout() {
               ))}
             </nav>
 
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t border-stone-100 md:border-none">
-              <form className="relative w-full md:w-64" onSubmit={handleSearchSubmit} role="search">
+            <div className="flex flex-col xl:flex-row items-center gap-6 w-full xl:w-auto mt-4 xl:mt-0 pt-4 xl:pt-0 border-t border-white/10 xl:border-none">
+              <form className="relative w-full xl:w-48" onSubmit={handleSearchSubmit} role="search">
                 <input
                   id="site-search"
-                  className="w-full bg-stone-100/80 border-transparent focus:bg-white focus:border-stone-300 focus:ring-2 focus:ring-stone-200 text-sm rounded-full px-4 py-2.5 outline-none transition-all placeholder:text-stone-400"
+                  className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/20 text-sm text-white rounded-md px-4 py-2 outline-none transition-all placeholder:text-white/40"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search..."
                   value={query}
@@ -162,27 +138,27 @@ export function Layout() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute top-full right-0 left-0 md:left-auto mt-2 w-full md:w-80 bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-stone-100 overflow-hidden p-2 z-50 text-left" 
+                      className="absolute top-full right-0 left-0 mt-2 w-full xl:w-80 bg-white rounded-md shadow-2xl border border-stone-100 overflow-hidden p-2 z-50 text-left" 
                       role="listbox"
                     >
                       {results.length ? (
                         <div className="flex flex-col gap-1">
                           {results.map((result) => (
                             <button
-                              className="text-left p-3 hover:bg-stone-50 rounded-xl transition-colors"
+                              className="text-left p-3 hover:bg-stone-50 rounded-sm transition-colors"
                               key={result.id}
                               onClick={() => handleResultClick(result.path)}
                               type="button"
                             >
                               <div className="font-semibold text-stone-900 text-sm">{result.label}</div>
-                              <div className="text-xs text-primary-500 font-medium mb-1">{result.category}</div>
+                              <div className="text-xs text-[#f97316] font-medium mb-1">{result.category}</div>
                               <div className="text-xs text-stone-500 line-clamp-1">{result.description}</div>
                             </button>
                           ))}
                         </div>
                       ) : (
                         <div className="p-4 text-center text-sm text-stone-500">
-                          No match yet. Try a page title, speaker, series, or event name.
+                          No match yet.
                         </div>
                       )}
                     </motion.div>
@@ -190,22 +166,15 @@ export function Layout() {
                 </AnimatePresence>
               </form>
 
-              <div className="flex gap-2 w-full md:w-auto">
-                <Link 
-                  className="px-5 py-2.5 rounded-full text-sm font-medium text-stone-700 bg-stone-100 hover:bg-stone-200 transition-colors text-center flex-1 md:flex-none" 
-                  onClick={closeNavigation} 
-                  to="/plan-your-visit"
-                >
-                  Visit
-                </Link>
+              <div className="flex w-full xl:w-auto">
                 <a
-                  className="px-5 py-2.5 rounded-full text-sm font-medium text-white bg-stone-900 hover:bg-black transition-colors text-center flex-1 md:flex-none"
+                  className="px-6 py-2.5 text-sm font-medium text-white bg-[#f97316] hover:bg-[#ea580c] transition-colors text-center w-full shadow-lg shadow-[#f97316]/20"
                   href={siteContent.site.givingPortalUrl}
                   onClick={closeNavigation}
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Give
+                  Donate
                 </a>
               </div>
             </div>
@@ -213,73 +182,61 @@ export function Layout() {
         </motion.header>
       </div>
 
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pb-20">
+      <main id="main-content" className={`flex-1 w-full ${isHome ? '' : 'mt-[100px] pb-20'}`}>
         <Outlet />
       </main>
 
-      <footer className="bg-stone-900 text-stone-300 mt-auto rounded-t-[3rem] mx-2 md:mx-4 px-6 md:px-12 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          <div className="lg:pr-8">
-            <h2 className="font-display text-3xl text-white font-bold tracking-tight mb-4">{siteContent.site.name}</h2>
-            <p className="text-stone-400 mb-6 text-sm leading-relaxed">{siteContent.site.welcomeMessage}</p>
-            <div className="flex flex-col gap-3 text-sm font-medium">
-              <a className="hover:text-white transition-colors" href={`tel:${siteContent.site.phone.replace(/[^+\d]/g, '')}`}>
-                {siteContent.site.phone}
-              </a>
-              <a className="hover:text-white transition-colors" href={`mailto:${siteContent.site.email}`}>{siteContent.site.email}</a>
-              <p className="text-stone-500">{siteContent.site.address}</p>
-            </div>
-          </div>
-
+      {/* Footer styled as simple dark box */}
+      <footer className="bg-[#0b162c] text-stone-300 px-6 py-16 md:py-20 mt-auto">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div>
-            <h3 className="font-display text-white text-lg font-semibold mb-6">Service Times</h3>
-            <ul className="flex flex-col gap-4">
+             <span className="font-display font-bold text-white tracking-widest uppercase mb-4 block">
+              {siteContent.site.shortName || 'CHURCH'}
+            </span>
+             <p className="text-white/60 mb-6 text-sm leading-relaxed">{siteContent.site.welcomeMessage}</p>
+             <Link className="text-xs text-white/40 hover:text-white uppercase tracking-widest transition-colors block" to="/admin">Admin Portal</Link>
+          </div>
+           <div>
+            <h3 className="font-display text-white text-lg mb-6">Service Times</h3>
+             <ul className="flex flex-col gap-4">
               {siteContent.site.serviceTimes.map((time) => (
-                <li key={time.label} className="border-b border-stone-800 pb-4 last:border-0 last:pb-0">
+                <li key={time.label} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
                   <strong className="block text-white text-sm font-medium mb-1">{time.label}</strong>
-                  <span className="text-stone-400 text-sm">{time.time}</span>
+                  <span className="text-white/60 text-sm">{time.time}</span>
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div>
-            <h3 className="font-display text-white text-lg font-semibold mb-6">Quick Links</h3>
-            <ul className="flex flex-col gap-3">
+           </div>
+           <div>
+             <h3 className="font-display text-white text-lg mb-6">Quick Links</h3>
+             <ul className="flex flex-col gap-3">
               {navItems.map((item) => (
                 <li key={item.path}>
-                  <Link className="text-sm font-medium hover:text-white transition-colors relative group inline-block" to={item.path}>
-                    {item.title}
-                    <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary-500 transition-all group-hover:w-full"></span>
-                  </Link>
+                  <Link className="text-sm text-white/60 hover:text-white transition-colors" to={item.path}>{item.title}</Link>
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div>
-            <h3 className="font-display text-white text-lg font-semibold mb-6">Connect</h3>
-            <ul className="flex flex-col gap-3 mb-8">
+           </div>
+           <div>
+             <h3 className="font-display text-white text-lg mb-6">Connect</h3>
+             <ul className="flex flex-col gap-3 mb-8">
               {siteContent.site.socials.map((social) => (
                 <li key={social.label}>
-                  <a className="text-sm font-medium hover:text-white transition-colors flex items-center gap-2" href={social.url} rel="noreferrer" target="_blank">
-                    {social.label} ↗
+                  <a className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-2" href={social.url} rel="noreferrer" target="_blank">
+                    {social.label}
                   </a>
                 </li>
               ))}
             </ul>
             <a
-              className="inline-block px-6 py-3 rounded-full text-sm font-medium text-stone-900 bg-primary-500 hover:bg-primary-400 transition-colors w-full text-center mb-4 shadow-[0_0_20px_rgba(212,163,115,0.2)]"
+              className="inline-block px-6 py-3 text-sm font-medium text-white bg-[#f97316] hover:bg-[#ea580c] transition-colors w-full text-center"
               href={siteContent.site.directionsUrl}
               rel="noreferrer"
               target="_blank"
             >
               Get Directions
             </a>
-            <Link className="block text-center text-xs text-stone-600 hover:text-stone-400 uppercase tracking-widest transition-colors" to="/admin">
-              Admin Portal
-            </Link>
-          </div>
+           </div>
         </div>
       </footer>
     </div>
