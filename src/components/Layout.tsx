@@ -182,7 +182,7 @@ export function Layout() {
         </motion.header>
       </div>
 
-      <main id="main-content" className={`flex-1 w-full ${isHome ? '' : 'mt-[100px] max-w-[1400px] mx-auto px-6 pb-20'}`}>
+      <main id="main-content" className={`flex-1 w-full ${isHome ? '' : 'mt-[100px] pb-20'}`}>
         <Outlet />
       </main>
 

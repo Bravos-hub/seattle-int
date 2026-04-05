@@ -17,3 +17,11 @@
 body {
   @apply bg-stone-50 text-stone-800 antialiased selection:bg-primary-500/20 selection:text-stone-900 overflow-x-hidden;
 }
+
+#root {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
