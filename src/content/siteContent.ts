@@ -4,10 +4,10 @@ export const defaultSiteContent: SiteContent = {
   site: {
     name: 'Seattle International Church',
     shortName: 'Seattle International',
-    heroTitle: 'SEATTLE INTERNATIONAL CHURCH',
+    heroTitle: 'Welcome Home',
     tagline: 'A place to worship, grow, and belong.',
     welcomeMessage:
-      'A Christ-centered family serving the city with worship, prayer, biblical teaching, and compassionate community.',
+      'Seattle International Church is a Christ-centered family serving the city with worship, prayer, biblical teaching, and compassionate community.',
     description:
       'A warm, mobile-first church website for first-time visitors, members, and ministry leaders.',
     address: '2410 Rainier Avenue South, Seattle, WA 98144',

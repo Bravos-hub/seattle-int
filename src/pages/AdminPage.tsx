@@ -288,14 +288,6 @@ export function AdminPage() {
     })
   }
 
-  async function handleCopyExport() {
-    try {
-      await navigator.clipboard.writeText(exportContent())
-      setStatusMessage('CMS export copied to clipboard.')
-    } catch {
-      setStatusMessage('Clipboard copy failed. Use Download JSON.')
-    }
-  }
 
   function handleDownloadExport() {
     const blob = new Blob([exportContent()], { type: 'application/json' })
@@ -314,6 +306,28 @@ export function AdminPage() {
       setStatusMessage(result.message)
       if (result.ok) setImportText('')
     })
+  }
+
+  async function publishToDatabase() {
+    setStatusMessage('Syncing with Neon database...')
+    try {
+      const response = await fetch('http://localhost:3001/api/content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(content),
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        setStatusMessage(`✅ ${data.message || 'Published successfully.'}`)
+      } else {
+        setStatusMessage(`❌ Error: ${data.error || 'Failed to sync'}`)
+      }
+    } catch {
+      setStatusMessage('❌ Network error: Is the backend server running?')
+    }
   }
 
   return (
@@ -365,10 +379,10 @@ export function AdminPage() {
            </div>
            <div className="flex gap-4">
               <button 
-                onClick={handleCopyExport}
-                className="px-4 py-2 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-colors rounded-sm"
+                onClick={publishToDatabase}
+                className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-colors rounded-sm shadow-lg shadow-emerald-500/10"
               >
-                Copy Snapshot
+                Publish Live
               </button>
               <button 
                 onClick={handleDownloadExport}

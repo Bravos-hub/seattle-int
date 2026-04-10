@@ -33,62 +33,102 @@ export function HomePage() {
   ]
 
   return (
-    <div className="flex flex-col bg-white overflow-hidden pb-12">
+    <div className="flex flex-col bg-white overflow-hidden">
 
-      {/* 1. Deep Blue Hero */}
-      <section className="relative w-full pt-48 pb-64 flex flex-col justify-center min-h-[60vh] md:min-h-[80vh] bg-[#0b162c] text-white isolate">
-        <img
+      {/* 1. Deep Cinematic Hero */}
+      <section className="relative w-full min-h-screen flex flex-col justify-center bg-stone-900 text-white isolate overflow-hidden">
+        {/* Animated background image */}
+        <motion.img
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.3 }}
+          transition={{ duration: 2, ease: "easeOut" }}
           src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2600&auto=format&fit=crop"
           alt="Worship scene"
-          className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-screen"
+          className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
         />
-        {/* Gradient overlay to match dark blue base */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0b162c]/90 via-[#0b162c]/60 to-transparent pointer-events-none" />
+        
+        {/* Layered cinematic overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-900 via-transparent to-stone-900 pointer-events-none opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-900/90 via-stone-900/40 to-transparent pointer-events-none" />
+        
+        {/* Scroll indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Scroll to explore</span>
+          <div className="w-px h-12 bg-gradient-to-b from-primary-500 to-transparent" />
+        </motion.div>
 
         <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col items-center text-center">
           <motion.div
             initial="hidden"
             animate="show"
-            transition={{ staggerChildren: 0.15 }}
-            className="max-w-3xl flex flex-col items-center gap-4 mx-auto"
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.5 } }
+            }}
+            className="max-w-4xl flex flex-col items-center gap-6 mx-auto"
           >
-            <motion.p variants={fadeInUp} className="text-white/60 tracking-[0.2em] text-xs font-bold uppercase mb-2">
-              WELCOME TO OUR CHURCH
-            </motion.p>
-            <motion.h1 variants={fadeInUp} className="font-display font-bold text-5xl md:text-7xl leading-[1.05] tracking-tight mb-4 text-center">
+            <motion.div variants={fadeInUp} className="flex items-center gap-4">
+              <div className="w-8 h-px bg-primary-500/50" />
+              <p className="text-primary-500 tracking-[0.4em] text-[10px] font-black uppercase">
+                Welcome to Seattle
+              </p>
+              <div className="w-8 h-px bg-primary-500/50" />
+            </motion.div>
+            
+            <motion.h1 variants={fadeInUp} className="font-display font-black text-5xl md:text-8xl lg:text-9xl leading-[0.9] tracking-tighter mb-4 text-center text-white drop-shadow-2xl">
               {siteContent.site.heroTitle}
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mb-8 text-center">
+            
+            <motion.p variants={fadeInUp} className="text-white/60 text-lg md:text-xl leading-relaxed max-w-2xl font-medium">
               {siteContent.site.welcomeMessage}
             </motion.p>
+            
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-8 w-full sm:w-auto">
+              <Link to="/visit" className="px-10 py-4 bg-white text-stone-900 font-bold text-xs uppercase tracking-widest hover:bg-primary-500 hover:text-white transition-all duration-500 shadow-xl shadow-black/20 text-center">
+                Plan Your Visit
+              </Link>
+              <Link to="/about" className="px-10 py-4 border border-white/20 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all duration-500 backdrop-blur-sm text-center">
+                Our Story
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-
-      {/* 3. Our Services Section */}
-      <section className="max-w-[1400px] mx-auto w-full px-6 md:px-16 py-12 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-
-          <div className="lg:col-span-4 flex flex-col items-start pr-0 lg:pr-8">
-            <p className="text-stone-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Our Services</p>
-            <h2 className="font-display text-4xl font-bold text-stone-900 mb-6 leading-tight">
-              We Love Serving Our Local Community
-            </h2>
-            <p className="text-stone-500 text-sm leading-relaxed mb-6">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
-            </p>
-            <Link className="inline-block px-8 py-3.5 bg-[#f97316] text-white font-medium text-sm hover:bg-[#ea580c] transition-colors" to="/ministries">
-              Learn More
-            </Link>
+      {/* 3. Our Services Section - Scroll Animated */}
+      <motion.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1 }}
+        className="max-w-[1400px] mx-auto w-full px-6 md:px-16 py-24 md:py-40"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 lg:gap-32">
+          <div className="lg:col-span-12 mb-16 text-center max-w-3xl mx-auto">
+             <p className="text-primary-500 text-[10px] font-black tracking-[0.4em] uppercase mb-6">Our Services</p>
+             <h2 className="font-display text-5xl md:text-7xl font-black text-stone-900 mb-8 leading-[1.1] tracking-tighter">
+               We Love Serving Our Local Community
+             </h2>
+             <div className="w-20 h-1 bg-primary-500 mx-auto" />
           </div>
 
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-y-12 gap-x-8 mt-12 lg:mt-0">
+          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-y-20 gap-x-12">
             {mappedServices.map((service, idx) => (
-              <article key={idx} className="flex flex-col">
-                {/* Generic minimal icon blocks mapping */}
-                <div className="w-10 h-10 border border-stone-200 bg-stone-50 flex items-center justify-center mb-4 text-stone-700">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <motion.article 
+                key={idx} 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.6 }}
+                className="flex flex-col group"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center mb-8 text-stone-400 group-hover:bg-primary-500 group-hover:text-white group-hover:border-primary-500 transition-all duration-500 shadow-sm group-hover:shadow-xl group-hover:shadow-primary-500/20">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={1.5} d={
                       idx === 0 ? "M4 6h16M4 12h16m-7 6h7" :
                         idx === 1 ? "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" :
@@ -99,44 +139,84 @@ export function HomePage() {
                     } />
                   </svg>
                 </div>
-                <strong className="text-stone-900 font-bold mb-2 block">{service.title}</strong>
-                <p className="text-stone-500 text-xs leading-relaxed max-w-[15rem] italic">{service.desc}</p>
-              </article>
+                <h3 className="text-stone-900 font-bold text-xl mb-4 group-hover:text-primary-500 transition-colors">{service.title}</h3>
+                <p className="text-stone-500 text-sm leading-relaxed italic">{service.desc}</p>
+              </motion.article>
             ))}
           </div>
+
+          <div className="lg:col-span-4 bg-stone-900 p-12 md:p-16 flex flex-col items-start relative overflow-hidden group">
+            {/* Background pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 blur-3xl rounded-full" />
+            
+            <p className="text-primary-500 text-[10px] font-black tracking-[0.4em] uppercase mb-6">Ministries</p>
+            <h3 className="font-display text-4xl font-bold text-white mb-8 leading-tight">
+              Impactful ways to get involved
+            </h3>
+            <p className="text-white/40 text-sm leading-relaxed mb-12 italic">
+              From local outreach to global missions, we believe every hand makes a difference in building a compassionate community.
+            </p>
+            <Link className="inline-block px-10 py-4 bg-white text-stone-900 font-bold text-xs uppercase tracking-widest hover:bg-primary-500 hover:text-white transition-all duration-500" to="/ministries">
+              All Ministries
+            </Link>
+          </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* 4. Current Series Section */}
-      <section className="max-w-[1400px] mx-auto w-full px-6 md:px-16 pt-16 pb-24 border-t border-stone-100 flex flex-col items-center">
-        <p className="text-stone-400 text-xs font-bold tracking-[0.2em] uppercase mb-4 text-center">Current Series</p>
-        <h2 className="font-display text-4xl font-bold text-stone-900 mb-6 text-center">Hope for Tomorrow</h2>
-        <p className="text-stone-500 text-sm text-center max-w-lg mb-16 leading-relaxed">
-          Get caught up with the current message series! Turpis massa sed elementum tempus egestas sed sed risus pretium.
-        </p>
+      {/* 4. Current Series Section - Cinematic Card Grid */}
+      <section className="bg-stone-50 py-32 md:py-48 isolate overflow-hidden relative">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-16 flex flex-col items-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-24 text-center max-w-2xl"
+          >
+            <p className="text-primary-500 text-[10px] font-black tracking-[0.4em] uppercase mb-6">Current Series</p>
+            <h2 className="font-display text-5xl md:text-7xl font-black text-stone-900 mb-8 tracking-tighter">Hope for Tomorrow</h2>
+            <p className="text-stone-400 text-lg italic leading-relaxed">
+              Discover how ancient truths bring living hope to our modern world. Join us for our latest message series.
+            </p>
+          </motion.div>
 
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
-          {featuredSermons.map((sermon, idx) => (
-            <article key={sermon.slug} className="flex flex-col group cursor-pointer w-full">
-              <div className="w-full aspect-[4/3] bg-stone-100 overflow-hidden mb-6 relative">
-                <img
-                  src={
-                    idx === 0 ? "https://images.unsplash.com/photo-1529070538774-1843cb1665e8?q=80&w=800&auto=format&fit=crop" :
-                      idx === 1 ? "https://images.unsplash.com/photo-1544427920-c49ccfb85579?q=80&w=800&auto=format&fit=crop" :
-                        "https://images.unsplash.com/photo-1533227268428-f9ed0900f953?q=80&w=800&auto=format&fit=crop"
-                  }
-                  alt="Sermon Thumbnail"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-              <p className="text-[#f97316] text-[10px] font-bold tracking-widest uppercase mb-2">HOPE FOR TOMORROW | PAST MESSAGES</p>
-              <h3 className="font-display text-xl font-bold text-stone-900 mb-2">{sermon.title}</h3>
-              <p className="text-stone-400 text-xs italic mb-6">Posted on {formatDate(sermon.date)}</p>
-              <Link to={window.location.origin + `/sermons`} className="text-stone-900 text-xs font-bold uppercase tracking-wider group-hover:text-[#f97316] transition-colors flex items-center gap-2">
-                Listen to the message <span className="text-[10px]">→</span >
-              </Link>
-            </article>
-          ))}
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12">
+            {featuredSermons.map((sermon, idx) => (
+              <motion.article 
+                key={sermon.slug} 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15, duration: 0.8 }}
+                className="flex flex-col group cursor-pointer"
+              >
+                <div className="w-full aspect-[16/10] bg-stone-900 overflow-hidden mb-10 relative shadow-2xl group-hover:shadow-primary-500/20 transition-all duration-500">
+                  <motion.img
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 1 }}
+                    src={
+                      idx === 0 ? "https://images.unsplash.com/photo-1529070538774-1843cb1665e8?q=80&w=800&auto=format&fit=crop" :
+                        idx === 1 ? "https://images.unsplash.com/photo-1544427920-c49ccfb85579?q=80&w=800&auto=format&fit=crop" :
+                          "https://images.unsplash.com/photo-1533227268428-f9ed0900f953?q=80&w=800&auto=format&fit=crop"
+                    }
+                    alt="Sermon Thumbnail"
+                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent opacity-80" />
+                  <div className="absolute bottom-6 left-6 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest italic">{sermon.series}</span>
+                  </div>
+                </div>
+                
+                <h3 className="font-display text-2xl font-bold text-stone-900 mb-2 group-hover:text-primary-500 transition-colors uppercase tracking-tight">{sermon.title}</h3>
+                <p className="text-stone-400 text-xs italic mb-8 font-medium">Recorded on {formatDate(sermon.date)} • {sermon.speaker}</p>
+                
+                <Link to={`/sermons`} className="w-fit text-stone-900 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 border-b-2 border-stone-100 pb-2 group-hover:border-primary-500 group-hover:text-primary-500">
+                  Watch Message <span>→</span>
+                </Link>
+              </motion.article>
+            ))}
+          </div>
         </div>
       </section>
 

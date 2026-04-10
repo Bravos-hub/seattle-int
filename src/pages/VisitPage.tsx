@@ -15,99 +15,132 @@ export function VisitPage() {
       'Plan your visit to Seattle International Church. Know our service times, what to expect, and how to find our community.',
    )
 
-   return (
-      <div className="flex flex-col bg-white overflow-hidden">
-         {/* Cinematic Hero */}
-         <section className="relative w-full pt-48 pb-32 flex flex-col justify-center bg-[#0b162c] text-white isolate overflow-hidden">
-            <img
-               src="https://images.unsplash.com/photo-1544427920-c49ccfb85579?q=80&w=2600&auto=format&fit=crop"
-               className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay"
-               alt="Church lobby"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0b162c] via-[#0b162c]/60 to-transparent pointer-events-none" />
+  return (
+    <div className="flex flex-col bg-white overflow-hidden">
+      {/* 1. Cinematic Hero - Parity with others */}
+      <section className="relative w-full min-h-[80vh] flex flex-col justify-center bg-stone-900 text-white isolate overflow-hidden">
+        <motion.img 
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.2 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          src="https://images.unsplash.com/photo-1544427920-c49ccfb85579?q=80&w=2600&auto=format&fit=crop" 
+          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay" 
+          alt="Church lobby" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-900 via-stone-900/40 to-stone-900 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/20 to-transparent pointer-events-none" />
+        
+        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-16">
+          <motion.div 
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.15 } }
+            }}
+            className="max-w-4xl"
+          >
+            <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-0.5 bg-primary-500" />
+              <p className="text-primary-500 font-black uppercase tracking-[0.4em] text-[10px]">
+                Join our community
+              </p>
+            </motion.div>
+            <motion.h1 variants={fadeInUp} className="font-display text-6xl md:text-8xl font-black leading-[1] tracking-tighter mb-8 text-white uppercase">
+               SEATTLE INTERNATIONAL CHURCH.
+            </motion.h1>
+            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-white/50 font-medium max-w-2xl leading-relaxed italic border-l-2 border-white/10 pl-8">
+               We can't wait to meet you. Whether it's your first time or your hundredth, you're home here.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
 
-            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-16">
-               <motion.div
-                  initial="hidden"
-                  animate="show"
-                  className="max-w-3xl"
-               >
-                  <motion.p variants={fadeInUp} className="text-primary-500 font-bold uppercase tracking-[0.2em] text-xs mb-4">
-                     Plan your visit
-                  </motion.p>
-                  <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[1.1] mb-6 whitespace-nowrap">
-                     SEATTLE INTERNATIONAL CHURCH.
-                  </motion.h1>
-                  <motion.p variants={fadeInUp} className="text-xl text-stone-300 font-medium max-w-xl leading-relaxed italic">
-                     We can't wait to meet you. Here is everything you need to know for your first Sunday.
-                  </motion.p>
-               </motion.div>
-            </div>
-         </section>
-
-         {/* Service Times & Address */}
-         <section className="py-24 px-6 md:px-16 max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 -mt-16 relative z-20">
-            <motion.article
-               initial={{ opacity: 0, x: -30 }}
-               animate={{ opacity: 1, x: 0 }}
-               transition={{ delay: 0.3, duration: 1 }}
-               className="bg-white p-10 md:p-14 shadow-2xl shadow-stone-900/5 border border-stone-100 h-full flex flex-col"
-            >
-               <h2 className="font-display text-3xl font-bold text-stone-900 mb-8 uppercase tracking-wide">Gathering Times</h2>
-               <div className="flex flex-col gap-8 flex-1">
-                  {siteContent.site.serviceTimes.map((time, idx) => (
-                     <div key={idx} className="flex justify-between items-baseline border-b border-stone-50 pb-4 last:border-0 last:pb-0">
-                        <div>
-                           <strong className="block text-stone-900 font-bold text-lg leading-none mb-2">{time.label}</strong>
-                           <p className="text-stone-400 text-xs italic">{time.note}</p>
-                        </div>
-                        <span className="text-primary-500 font-display font-medium text-2xl">{time.time}</span>
+      {/* 2. Service Times & Expectation Grid */}
+      <section className="py-32 px-6 md:px-16 max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 md:gap-24 -mt-32 relative z-20">
+         <motion.article 
+           initial={{ opacity: 0, y: 40 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           className="lg:col-span-6 bg-white p-12 md:p-16 shadow-[0_40px_80px_rgba(0,0,0,0.08)] border border-stone-100 flex flex-col group overflow-hidden relative"
+         >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-stone-50 rounded-full translate-x-12 -translate-y-12 transition-transform duration-700 group-hover:scale-150" />
+            
+            <h2 className="font-display text-xs font-black text-primary-500 uppercase tracking-[0.4em] mb-12 relative z-10">Gathering Times</h2>
+            <div className="flex flex-col gap-10 flex-1 relative z-10">
+               {siteContent.site.serviceTimes.map((time, idx) => (
+                  <div key={idx} className="flex justify-between items-baseline border-b border-stone-100 pb-6 last:border-0 last:pb-0 group/item">
+                     <div>
+                        <strong className="block text-stone-900 font-bold text-xl leading-none mb-3 group-hover/item:text-primary-500 transition-colors">{time.label}</strong>
+                        <p className="text-stone-400 text-sm italic font-medium">"{time.note}"</p>
                      </div>
-                  ))}
-               </div>
-               <div className="mt-12 p-8 bg-stone-50 border border-stone-100 flex flex-col gap-4">
-                  <div>
-                     <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest block mb-2">Location</span>
-                     <p className="text-stone-800 font-bold">{siteContent.site.address}</p>
+                     <span className="text-stone-900 font-display font-black text-3xl group-hover/item:scale-110 transition-transform">{time.time}</span>
                   </div>
-                  <a href={siteContent.site.directionsUrl} target="_blank" rel="noreferrer" className="px-8 py-3 bg-[#f97316] text-white font-bold text-xs tracking-widest uppercase hover:bg-[#ea580c] transition-colors text-center w-full">Get Directions →</a>
-               </div>
-            </motion.article>
-
-            <motion.article
-               initial={{ opacity: 0, x: 30 }}
-               animate={{ opacity: 1, x: 0 }}
-               transition={{ delay: 0.4, duration: 1 }}
-               className="bg-[#0b162c] p-10 md:p-14 shadow-2xl shadow-stone-900/10 border border-white/5 text-white flex flex-col"
-            >
-               <h2 className="font-display text-3xl font-bold mb-8 uppercase tracking-wide">What to expect</h2>
-               <div className="flex flex-col gap-8">
-                  {siteContent.visitHighlights.map((highlight, idx) => (
-                     <div key={idx} className="flex gap-6 group">
-                        <span className="text-primary-500 font-display font-extrabold text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{idx + 1}</span>
-                        <div>
-                           <h3 className="font-display text-xl font-bold mb-2 group-hover:text-primary-500 transition-colors uppercase tracking-tight">{highlight.title}</h3>
-                           <p className="text-white/40 text-sm leading-relaxed italic">"{highlight.description}"</p>
-                        </div>
-                     </div>
-                  ))}
-               </div>
-               <div className="mt-auto pt-12 text-center flex flex-col items-center">
-                  <p className="text-white/60 text-sm mb-6 max-w-xs">{siteContent.site.welcomeMessage}</p>
-                  <Link to="/ministries" className="text-primary-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors border-b border-primary-500/30 pb-1">Explore Ministries →</Link>
-               </div>
-            </motion.article>
-         </section>
-
-         {/* Scripture CTA */}
-         <section className="py-32 bg-stone-50 overflow-hidden text-center items-center flex flex-col">
-            <div className="max-w-[800px] mx-auto px-6 md:px-16 w-full flex flex-col items-center gap-8">
-               <h2 className="font-display text-3xl md:text-5xl font-bold text-stone-900 leading-tight">
-                  "For where two or three gather in my name, there am I with them."
-               </h2>
-               <p className="text-stone-400 italic font-medium">— Matthew 18:20</p>
+               ))}
             </div>
-         </section>
-      </div>
-   )
+            
+            <div className="mt-16 pt-12 border-t border-stone-100 flex flex-col gap-8 relative z-10">
+               <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-stone-300 font-black uppercase tracking-[0.3em]">Our Location</span>
+                  <p className="text-stone-900 font-bold text-lg leading-relaxed">{siteContent.site.address}</p>
+               </div>
+               <a href={siteContent.site.directionsUrl} target="_blank" rel="noreferrer" className="px-10 py-4 bg-primary-500 text-white font-black text-xs tracking-[0.2em] uppercase hover:bg-stone-900 transition-all duration-500 text-center w-full shadow-lg shadow-primary-500/20">Get Directions <span>→</span></a>
+            </div>
+         </motion.article>
+
+         <motion.article 
+           initial={{ opacity: 0, y: 40 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           transition={{ delay: 0.2 }}
+           className="lg:col-span-6 bg-stone-900 p-12 md:p-16 shadow-[0_40px_80px_rgba(0,0,0,0.2)] border border-white/5 text-white flex flex-col relative overflow-hidden group"
+         >
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary-500/5 blur-[100px] rounded-full pointer-events-none" />
+            
+            <h2 className="font-display text-xs font-black text-primary-500 uppercase tracking-[0.4em] mb-12">What to expect</h2>
+            <div className="flex flex-col gap-12 relative z-10">
+               {siteContent.visitHighlights.map((highlight, idx) => (
+                  <div key={idx} className="flex gap-8 group/item">
+                     <span className="text-white/10 font-display font-black text-4xl group-hover/item:text-primary-500 transition-all">0{idx + 1}</span>
+                     <div>
+                        <h3 className="font-display text-2xl font-bold mb-3 group-hover/item:text-white transition-colors tracking-tight uppercase">{highlight.title}</h3>
+                        <p className="text-white/40 text-sm leading-relaxed italic font-medium">"{highlight.description}"</p>
+                     </div>
+                  </div>
+               ))}
+            </div>
+            
+            <div className="mt-auto pt-24 text-center flex flex-col items-center relative z-10">
+               <p className="text-white/30 text-sm mb-10 italic max-w-sm font-medium leading-relaxed">"{siteContent.site.welcomeMessage}"</p>
+               <Link to="/ministries" className="text-white text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary-500 transition-colors border-b-2 border-white/10 group-hover:border-primary-500/50 pb-2">Explore Ministries <span className="ml-2">→</span></Link>
+            </div>
+         </motion.article>
+      </section>
+
+      {/* 3. Scripture CTA - Cinematic Modern Strip */}
+      <section className="py-48 bg-stone-50 overflow-hidden text-center items-center flex flex-col relative isolate">
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1400px] h-full pointer-events-none opacity-50">
+           <div className="absolute top-1/2 left-0 w-32 h-32 bg-primary-500/10 blur-[80px] rounded-full" />
+           <div className="absolute top-1/2 right-0 w-32 h-32 bg-blue-500/10 blur-[80px] rounded-full" />
+         </div>
+
+         <motion.div 
+           initial={{ opacity: 0, scale: 0.9 }}
+           whileInView={{ opacity: 1, scale: 1 }}
+           viewport={{ once: true }}
+           transition={{ duration: 1 }}
+           className="max-w-[1000px] mx-auto px-6 md:px-16 w-full flex flex-col items-center gap-12 relative z-10"
+         >
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary-500 shadow-xl shadow-black/5 font-black text-2xl">"</div>
+            <h2 className="font-display text-4xl md:text-6xl font-black text-stone-900 leading-[1.1] tracking-tighter italic">
+               For where two or three gather in my name, there am I with them.
+            </h2>
+            <div className="flex flex-col items-center gap-4">
+               <div className="w-8 h-px bg-stone-200" />
+               <p className="text-primary-500 font-black uppercase tracking-[0.4em] text-[10px]">Matthew 18:20</p>
+            </div>
+         </motion.div>
+      </section>
+    </div>
+  )
 }
